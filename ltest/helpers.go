@@ -2,7 +2,7 @@ package ltest
 
 import (
 	"testing"
-	"liblundis"
+	"code.google.com/p/liblundis"
 )
 
 func AssertEqualsFloat64(t *testing.T, x, expected float64, message string) {

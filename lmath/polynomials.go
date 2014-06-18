@@ -3,7 +3,7 @@ package lmath
 import (
 	"bytes"
 	"fmt"
-	"liblundis"
+	"code.google.com/p/liblundis"
 )
 
 type Polynomial []float64

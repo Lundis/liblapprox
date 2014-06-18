@@ -2,8 +2,8 @@ package lmath
 
 import (
 	"testing"
-	"liblundis/ltest"
-	"liblundis"
+	"code.google.com/p/liblundis/ltest"
+	"code.google.com/p/liblundis"
 )
 
 func testDegree(t *testing.T) {

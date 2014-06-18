@@ -3,7 +3,7 @@ package lmath
 import (
 	"testing"
 	"math"
-	"liblundis/ltest"
+	"code.google.com/p/liblundis/ltest"
 	"fmt"
 )
 

@@ -4,7 +4,7 @@ import(
 	"math"
 	"math/rand"
 	"testing"
-    "liblundis"
+    "code.google.com/p/liblundis"
 )
 
 func TestMax(t *testing.T) {
