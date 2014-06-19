@@ -73,7 +73,7 @@ func GenerateEquiDistanceRoots(degree int, start, end float64) []float64 {
 		return roots
 	}
 	for k := 0; k < degree; k++ {
-		roots[k] = start + (end - start)*float64(k/(degree-1))
+		roots[k] = start + (end - start)*float64(k)/float64(degree-1)
 	}
 	return roots
 }

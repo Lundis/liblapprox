@@ -41,6 +41,10 @@ func TestGenerateChebyshevRoots(t *testing.T) {
 }
 
 func TestGenerateEquiDistanceRoots(t *testing.T) {
-	//roots := GenerateEquiDistanceRoots(3, -1, 1)
-	
+	roots := GenerateEquiDistanceRoots(65, -1, 1)
+	sum := float64(0)
+	for _, v := range roots {
+		sum += v
+	}
+	ltest.AssertEqualsFloat64(t, sum, 0, "sum not equal to zero")
 }
