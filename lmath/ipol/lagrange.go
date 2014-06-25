@@ -1,8 +1,9 @@
-package lmath
+package ipol
 
 import(
 	"fmt"
 	"math"
+	. "code.google.com/p/liblundis/lmath"
 )
 
 type LagrangeInterpolation struct {

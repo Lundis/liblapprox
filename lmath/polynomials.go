@@ -64,6 +64,18 @@ func (self Polynomial) Mult(other Polynomial) Polynomial {
 	return poly
 }
 
+// TODO: this could be made more numerically stable for large values of k
+func (self Polynomial) Pow(k int) Polynomial {
+	if k == 0 {
+		return Polynomial{1}
+	}
+	poly := self.Copy()
+	for i := 1; i < k; i++ {
+		poly = poly.Mult(self)
+	}
+	return poly
+}
+
 func (self Polynomial) ValueAt(x float64) float64 {
 	x_val := float64(1)
 	sum := self[0]

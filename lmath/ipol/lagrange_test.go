@@ -1,9 +1,9 @@
-package lmath
+package ipol
 
 import (
 	"testing"
 	"math"
-	"code.google.com/p/liblundis/ltest"
+	. "code.google.com/p/liblundis/lmath"
 	"fmt"
 )
 
@@ -12,7 +12,7 @@ func assertLagrangeInterpolation(t *testing.T, x, y Vector) {
 	L := lagrange.Function()
 	for i := range x {
 		// the lagrange interpolation should be equal to the source function for all x0 in x
-		ltest.AssertEqualsFloat64(t, L(x[i]), y[i], "")
+		AssertEqualsFloat64(t, L(x[i]), y[i], "")
 	}
 }
 
@@ -29,14 +29,16 @@ func TestGenerateChebyshevRoots(t *testing.T) {
 	f := func(x float64) float64 {
         return math.Abs(x)
     }
-    degree := 6
+    degree := 11
 	x := GenerateChebyshevRoots(degree, -1, 1)
 	y := Values(f, x)
 	assertLagrangeInterpolation(t, x, y)
 
+	poly11 := Polynomial{0, -11, 0, 220, 0, -1232, 0, 2816, 0, -2816, 0, 1024}
+
 	// check that the roots are actually roots
 	for i, xi := range x {
-		ltest.AssertEqualsFloat64(t, math.Cos(float64(degree)*xi), 0, fmt.Sprintf("root %v, cos(%v) ", i, float64(degree)*xi))
+		AssertEqualsFloat64(t, poly11.ValueAt(xi), 0, fmt.Sprintf("root %v, Tn(%v) == %v ", i, xi, poly11.ValueAt(xi)))
 	}
 }
 
@@ -46,5 +48,5 @@ func TestGenerateEquiDistanceRoots(t *testing.T) {
 	for _, v := range roots {
 		sum += v
 	}
-	ltest.AssertEqualsFloat64(t, sum, 0, "sum not equal to zero")
+	AssertEqualsFloat64(t, sum, 0, "sum not equal to zero")
 }
