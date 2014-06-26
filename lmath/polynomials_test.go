@@ -40,6 +40,10 @@ func TestPow(t *testing.T) {
 	AssertEqualsPolynomial(t, p2.Pow(0), Polynomial{1})
 }
 
+func TestDerive(t *testing.T) {
+	
+}
+
 func TestFunction(t *testing.T) {
 
 }

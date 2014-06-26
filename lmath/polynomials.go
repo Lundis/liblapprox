@@ -86,6 +86,17 @@ func (self Polynomial) ValueAt(x float64) float64 {
 	return sum
 }
 
+func (self Polynomial) Derive() Polynomial {
+	if self.Degree() == 0 {
+		return Polynomial{0}
+	}
+	d := NewPolynomial(self.Degree() - 1)
+	for i := 0; i <= d.Degree(); i++ {
+		d[i] = float64(i+1)*self[i+1]
+	}
+	return d
+}
+
 func (self Polynomial) Function() Func1to1 {
 	return func(x float64) float64 {
 		return self.ValueAt(x)

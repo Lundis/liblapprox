@@ -12,7 +12,7 @@ func TestBernsteinPolynomial(t *testing.T) {
 	// for this function the bernstein polynomial is
 	// Bnf = x/n + (n-1)/n * x^2
 	for n := 1; n < 10; n++ {
-		bnf := BernsteinPolynomial(n, f, 0, 1)
+		bnf := NewBernsteinInterpolation(n, f, 0, 1).Polynomial()
 		expected := Polynomial{0, 1.0/float64(n), float64(n-1)/float64(n) }
 		AssertEqualsPolynomial(t, bnf, expected)
 	}

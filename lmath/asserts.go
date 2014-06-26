@@ -38,6 +38,4 @@ func AssertEqualsPolynomial(t *testing.T, p, correct Polynomial) {
 	for ; i <= max.Degree(); i++ {
 		AssertEqualsFloat64(t, max[i], 0, fmt.Sprintf("degreediff, p[%v] != 0", i))
 	}
-
-
 }
