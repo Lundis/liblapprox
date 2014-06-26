@@ -8,10 +8,22 @@ import (
 
 type BigPoly []*big.Rat
 
+func NewRatf(k float64) *big.Rat {
+	return big.NewRat(1,1).SetFloat64(k)
+}
+
+func NewRati(k int) *big.Rat {
+	return big.NewRat(int64(k),1)
+}
+
+func NewRati64(k int64) *big.Rat {
+	return big.NewRat(k,1)
+}
+
 func NewBigPoly(degree int) BigPoly {
 	poly := make([]*big.Rat, degree + 1)
 	for i := range poly {
-		poly[i] = big.NewRat(0, 1)
+		poly[i] = NewRati(0)
 	}
 	return poly
 }
@@ -23,7 +35,7 @@ func NewBigPoly0(x0 *big.Rat) BigPoly {
 }
 
 func NewBigPoly0f(x0 float64) BigPoly {
-	return NewBigPoly0(big.NewRat(1, 1).SetFloat64(x0))
+	return NewBigPoly0(NewRatf(x0))
 }
 
 func NewBigPoly1(x0, x1 *big.Rat) BigPoly {
@@ -34,9 +46,7 @@ func NewBigPoly1(x0, x1 *big.Rat) BigPoly {
 }
 
 func NewBigPoly1f(x0, x1 float64) BigPoly {
-	return NewBigPoly1(
-			big.NewRat(1, 1).SetFloat64(x0),
-			big.NewRat(1, 1).SetFloat64(x1))
+	return NewBigPoly1(NewRatf(x0), NewRatf(x1))
 }
 
 func NewBigPoly2(x0, x1, x2 *big.Rat) BigPoly {
@@ -48,10 +58,7 @@ func NewBigPoly2(x0, x1, x2 *big.Rat) BigPoly {
 }
 
 func NewBigPoly2f(x0, x1, x2 float64) BigPoly {
-	return NewBigPoly2(
-			big.NewRat(1, 1).SetFloat64(x0),
-			big.NewRat(1, 1).SetFloat64(x1),
-			big.NewRat(1, 1).SetFloat64(x2))
+	return NewBigPoly2(NewRatf(x0), NewRatf(x1), NewRatf(x2))
 }
 
 func NewBigPoly3(x0, x1, x2, x3 *big.Rat) BigPoly {
@@ -64,16 +71,14 @@ func NewBigPoly3(x0, x1, x2, x3 *big.Rat) BigPoly {
 }
 
 func NewBigPoly3f(x0, x1, x2, x3 float64) BigPoly {
-	return NewBigPoly3(
-			big.NewRat(1, 1).SetFloat64(x0),
-			big.NewRat(1, 1).SetFloat64(x1),
-			big.NewRat(1, 1).SetFloat64(x2),
-			big.NewRat(1, 1).SetFloat64(x3))
+	return NewBigPoly3(NewRatf(x0), NewRatf(x1), NewRatf(x2), NewRatf(x3))
 }
 
 func (self BigPoly) Copy() BigPoly {
 	poly := NewBigPoly(self.Degree())
-	copy(poly, self)
+	for i, v := range self {
+		poly[i].Set(v)
+	}
 	return poly
 }
 
@@ -100,7 +105,7 @@ func (self BigPoly) Plus(other BigPoly) BigPoly {
 	return poly
 }
 
-func (self BigPoly) MultConstant(k *big.Rat) BigPoly {
+func (self BigPoly) MultRat(k *big.Rat) BigPoly {
 	poly := self.Copy()
 	for i := range poly {
 		poly[i].Mul(poly[i], k)
@@ -108,8 +113,16 @@ func (self BigPoly) MultConstant(k *big.Rat) BigPoly {
 	return poly
 }
 
+func (self BigPoly) MultFloat64(k float64) BigPoly {
+	return self.MultRat(NewRatf(k))
+}
+
+func (self BigPoly) MultInt64(k int64) BigPoly {
+	return self.MultRat(NewRati64(k))
+}
+
 func (self BigPoly) Minus(other BigPoly) BigPoly {
-	return self.Plus(other.MultConstant(big.NewRat(-1, 1)))
+	return self.Plus(other.MultFloat64(-1))
 }
 
 func (self BigPoly) Mult(other BigPoly) BigPoly {
@@ -124,10 +137,9 @@ func (self BigPoly) Mult(other BigPoly) BigPoly {
 	return poly
 }
 
-// TODO: this could be made more numerically stable for large values of k
 func (self BigPoly) Pow(k int) BigPoly {
 	if k == 0 {
-		return NewBigPoly0(big.NewRat(1, 1))
+		return NewBigPoly0(NewRati(1))
 	}
 	poly := self.Copy()
 	for i := 1; i < k; i++ {
@@ -137,12 +149,24 @@ func (self BigPoly) Pow(k int) BigPoly {
 }
 
 func (self BigPoly) ValueAt(x *big.Rat) *big.Rat {
-	x_val := big.NewRat(1, 1).Set(x)
-	sum := self[0]
+	x_val := NewRati(1)
+	tmp := NewRati(1)
+	sum := NewRati(1).Set(self[0])
 	for i := 1; i < len(self); i++ {
 		x_val.Mul(x_val, x)
-		tmp := big.NewRat(1, 1).Mul(x_val, self[i])
+		tmp.Mul(x_val, self[i])
 		sum.Add(sum, tmp)
+	}
+	return sum
+}
+
+func (self BigPoly) ValueAtf64(x float64) float64 {
+	x_val := float64(1)
+	sum, _ := self[0].Float64()
+	for i := 1; i < len(self); i++ {
+		x_val *= x
+		k, _ := self[i].Float64()
+		sum += x_val * k
 	}
 	return sum
 }
@@ -153,16 +177,14 @@ func (self BigPoly) Derive() BigPoly {
 	}
 	d := NewBigPoly(self.Degree() - 1)
 	for i := 0; i <= d.Degree(); i++ {
-		ibig := big.NewRat(int64(i + 1), 1)
-		d[i].Mul(self[i+1], ibig)
+		d[i].Mul(self[i+1], NewRati(i + 1))
 	}
 	return d
 }
 
 func (self BigPoly) Function() Func1to1 {
 	return func(x float64) float64 {
-		y, _ := self.ValueAt(big.NewRat(1, 1).SetFloat64(x)).Float64()
-		return y
+		return self.ValueAtf64(x)
 	}
 }
 

@@ -14,6 +14,6 @@ func TestCreateFejerHermitePolynomial(t *testing.T) {
 	roots := GenerateChebyshevRoots(5, -1, 1)
 	p := CreateFejerHermitePolynomialvf(roots, f, -1, 1)
 	for i, root := range roots {
-		AssertEqualsFloat64(t, p.ValueAt(root), 0, fmt.Sprintf("faulty root #%v", i))
+		AssertEqualsFloat64(t, p.ValueAtf64(root), f(root), fmt.Sprintf("faulty root #%v", i))
 	}
 }

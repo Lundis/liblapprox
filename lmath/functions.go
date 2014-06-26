@@ -30,7 +30,7 @@ func CalculateAccurately(f func(accuracy int) float64, initial_accuracy int) flo
     accuracy := initial_accuracy
     iter1 := float64(0)
     iter2 := f(accuracy)
-    for math.Abs(iter1 - iter2) > 1e-6 {
+    for math.Abs(iter1 - iter2) > 1e-6 && accuracy < initial_accuracy*2^8 {
         accuracy *= 2
         iter1 = iter2
         iter2 = f(accuracy)
@@ -56,7 +56,7 @@ func FindMaxDiff(f, g Func1to1, start, end float64) float64 {
     fgdiff := FuncAbsDiff(f, g)
     error := CalculateAccurately(func(accuracy int) float64 {
         return Max(fgdiff, accuracy, start, end) 
-        }, 100)
+        }, 128)
     return error
 }
 
