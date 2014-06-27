@@ -18,7 +18,7 @@ func NewBernsteinInterpolation(degree int, f Func1to1, start, end float64) Berns
 		p2 := NewBigPoly1f(1, -1).Pow(degree-k)
 		x_k := start + (end - start) * float64(k)/float64(degree)
 		bin := big.NewRat(1, 1).SetInt(big.NewInt(1).Binomial(int64(degree), int64(k)))
-		c := bin.Mul(bin, big.NewRat(1,1).SetFloat64(f(x_k)))
+		c := bin.Mul(bin, NewRatf(f(x_k)))
 		sum = sum.Plus(p1.Mult(p2).MultRat(c))
 	}
 	return BernsteinInterpolation{start, end, sum}

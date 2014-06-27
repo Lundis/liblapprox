@@ -2,6 +2,7 @@ package ipol
 
 import(
 	. "code.google.com/p/liblundis/lmath"
+	"code.google.com/p/liblundis"
 	"testing"
 	"fmt"
 )
@@ -25,15 +26,13 @@ func TestBernsteinPolynomialInterval(t *testing.T) {
 	}
 	// for this function the bernstein polynomial in the range -1 <= x <= 1 is
 	// Bnf = 1/(4n^2) + (n-1)/n * x^2
-	for n := 1; n < 10; n++ {
-		bnf := NewBernsteinInterpolation(n, f, -1, 1).BigPoly()
-		//fmt.Printf("%v\n", bnf)
-		expected := NewBigPoly2f(1.0/float64(4*n*n), 0, float64(n-1)/float64(n))
-		g := func(x float64) float64 {
-			f := expected.Function()
-			return f((x + 1) / 2)
-		}
-		error := FindMaxDiff(bnf.Function(), g, -1, 1)
-		AssertEqualsFloat64(t, error, 0, fmt.Sprintf("degree %v error: ", n))
+	// ||(Bnx^2)(x) - x^2||inf = 1/(4n^2) + 1/n
+	for n := 1; n < 20; n++ {
+		bernstein := NewBernsteinInterpolation(n, f, -1, 1)
+		error := FindMaxDiff(bernstein.Function(), f, -1, 1)
+		experr := float64(1+4*n)/float64(4*n*n)
+		if error > experr && !liblundis.Equals(error, experr) {
+			fmt.Sprintf("degree %v error: %v > %v", n, error, experr)
+		} 
 	}
 }
