@@ -19,5 +19,5 @@ type Scalar64 struct {
 }
 
 type ScalarRat struct {
-	Value big.Rat
+	Value *big.Rat
 }

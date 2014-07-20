@@ -14,5 +14,5 @@ func (self *Expression) Simplify() {
 // Creates a Polynomial representing this Expression. If the expression cant be reduced to a polynomial it returns nil.
 // The Expression can only be reduced to a polynomial if it contains just plus/minus/multiplication and has one or no variables.
 func (self *Expression) AsPolynomial() *lmath.Polynomial {
-	
+	return nil	
 }
