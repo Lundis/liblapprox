@@ -15,6 +15,9 @@ func ParseExpression(expr string) (*Node, error) {
 }
 
 func parse(expr []byte) (*Node, error) {
+	if len(expr) == 0 {
+		return nil, errors.New("Syntax Error!")
+	}
 	return parsePlus(expr)	
 }
 
@@ -25,39 +28,35 @@ func parsePlus(expr []byte) (*Node, error) {
 		// Nothing was found, move on to multiplication
 		return parseMult(expr)
 	}
-	nodes := make([]*Node, len(plus) + len(minus))
-	for i := 0; i < len(plus); i++ {
-		n, err := parseMult(plus[i])
-		if err != nil {
-			return nil, err
-		}
-		nodes[i] = n
+	nodes_plus, err := parseExpressions(plus)
+	if err != nil {
+		return nil, err
 	}
-	for i := 0; i < len(minus); i++ {
-		m, err := parseMult(minus[i])
-		if err != nil {
-			return nil, err
-		}
-		nodes[len(plus) + i] = NewMinusNode(m)
+	nodes_minus, err := parseExpressions(minus)
+	if err != nil {
+		return nil, err
 	}
-	return NewPlusNode(nodes), nil
+
+	for _, node := range nodes_minus {
+		nodes_plus = append(nodes_plus, NewMinusNode(node))
+	}
+	return NewPlusNode(nodes_plus), nil
 
 }
 
+// Parses multiplication and division
 func parseMult(expr []byte) (*Node, error) {
+	if len(expr) == 0 {
+		return nil, errors.New("Syntax Error!")
+	}
 	mult, div := tokenize(expr, '*', '/')
 	if len(mult) == 1 && len(div) == 0 {
 		// Nothing was found, move on to parentheses
 		return parseParentheses(expr)
 	}
-	nodes_mult := make([]*Node, len(mult))
-
-	var err error
-	for i := 0; i < len(mult); i++ {
-		nodes_mult[i], err = parse(mult[i])
-		if err != nil {
-			return nil, err
-		}
+	nodes_mult, err := parseExpressions(mult)
+	if err != nil {
+		return nil, err
 	}
 	n1 := nodes_mult[0]
 	if len(nodes_mult) != 1 {
@@ -67,15 +66,16 @@ func parseMult(expr []byte) (*Node, error) {
 	if len(div) == 0 {
 		return n1, nil
 	} else {
-		nodes_div := make([]*Node, len(div))
-		for i := 0; i < len(div); i++ {
-			nodes_div[i], err = parse(div[i])
-			if err != nil {
-				return nil, err
-			}
+		nodes_div, err := parseExpressions(div)
+		if err != nil {
+			return nil, err
 		}
-		n2 := NewMultNode(nodes_div)
-		return NewDivNode(n1, n2), nil
+		n2 := nodes_div[0]
+		if len(div) != 1 {
+			n2 = NewMultNode(nodes_div)
+		}
+		div_node := NewDivNode(n1, n2)
+		return div_node, nil
 	}
 }
 
@@ -125,6 +125,7 @@ func tokenize(expr []byte, op1, op2 byte) ([][]byte, [][]byte) {
 	which := 1
 	if expr[0] == op2 {
 		which = 2
+		expr = expr[1:]
 	}
 
 	for i, v := range expr {
@@ -132,7 +133,7 @@ func tokenize(expr []byte, op1, op2 byte) ([][]byte, [][]byte) {
 			depth++
 		} else if v == ')' {
 			depth--
-		} else if (depth == 0 && (v == op1 || v == op2)) || (i == len(expr) - 1) {
+		} else if depth == 0 && (v == op1 || v == op2) {
 			if which == 1 {
 				indices1 = append(indices1, expr[start:i])
 			} else {
@@ -148,6 +149,24 @@ func tokenize(expr []byte, op1, op2 byte) ([][]byte, [][]byte) {
 
 		}
 	}
+	// last one
+	if which == 1 {
+		indices1 = append(indices1, expr[start:])
+	} else {
+		indices2 = append(indices2, expr[start:])
+	}
 
 	return indices1, indices2
+}
+
+func parseExpressions(exprs [][]byte) ([]*Node, error) {
+	nodes := make([]*Node, len(exprs))
+	var err error
+	for i := 0; i < len(exprs); i++ {
+		nodes[i], err = parse(exprs[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nodes, nil
 }
