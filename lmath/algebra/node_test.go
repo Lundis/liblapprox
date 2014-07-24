@@ -11,9 +11,11 @@ func TestEvaluateSimple(t *testing.T) {
 	assertEquals(t, "2/4", big.NewRat(2, 4), nil)
 }
 
-func TestEvaluateParentheses(t *testing.T) {
-	assertEquals(t, "5*(3+2)", big.NewRat(25, 1), nil)
-
+func TestEvaluatePrecedence(t *testing.T) {
+	assertEquals(t, "5 * (3 + 2)", big.NewRat(25, 1), nil)
+	assertEquals(t, "5 * 3 + 5 * 6", big.NewRat(45, 1), nil)
+	assertEquals(t, "5 * 3 * (3 + 2)", big.NewRat(75, 1), nil)
+	assertEquals(t, "2 + 3 * 4", big.NewRat(14, 1), nil)
 }
 
 func TestEvaluateVariables(t *testing.T) {
