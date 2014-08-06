@@ -1,4 +1,4 @@
-package calculator
+package main
 
 import (
 	"code.google.com/p/gowut/gwu"

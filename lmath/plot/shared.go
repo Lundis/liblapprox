@@ -6,7 +6,11 @@ import (
 	"fmt"
 )
 
-func WritePlotData(funcs []lmath.Func1to1, indices []int, filename string, n int, start, end float64) {
+// WritePlotData writes a table of function values to a file
+// funcs: a map with the functions
+// indices: The indices of the maps to be written
+// n: amount of data points
+func WritePlotData(funcs map[int] lmath.Func1to1, indices []int, filename string, n int, start, end float64) {
     file, _ := os.Create(filename)
     fmt.Fprintf(file, "x    \t")
     for _, i := range indices {
