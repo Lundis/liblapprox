@@ -28,7 +28,7 @@ func NewApprox(f lmath.Func1to1, start, end float64) *Approx {
 func (self *Approx) PopulateErrors() {
 	self.Errors = make(map[int] float64)
 	for degree, f := range self.Funcs {
-		self.Errors[degree] = lmath.FindMaxDiff(self.Func, f, self.Start, self.End)
+		self.Errors[degree], _ = lmath.FindMaxDiff(self.Func, f, self.Start, self.End)
 	}
 }
 
