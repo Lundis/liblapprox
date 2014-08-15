@@ -24,6 +24,17 @@ func TestGenerateChebyshevRoots(t *testing.T) {
 	}
 }
 
+// Tests that the roots are in order
+func TestGenerateChebyshevRoots2(t *testing.T) {
+	roots := GenerateChebyshevRoots(3, -1, 1)
+	fmt.Println(roots)
+	for i := 0; i < len(roots)-1; i++ {
+		if roots[i] > roots[i+1] {
+			t.Errorf("roots are not in order")
+		}
+	}
+}
+
 func TestGenerateEquiDistanceRoots(t *testing.T) {
 	roots := GenerateEquiDistanceRoots(65, -1, 1)
 	sum := float64(0)

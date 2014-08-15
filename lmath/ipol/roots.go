@@ -8,7 +8,7 @@ import (
 func GenerateChebyshevRoots(degree int, start, end float64) []float64 {
 	roots := make([]float64, degree)
 	for k := 0; k < degree; k++ {
-		roots[k] = math.Cos(math.Pi*float64(2 * k + 1)/ float64(2*degree))
+		roots[k] = math.Cos(-math.Pi + math.Pi/2 * float64(2 * k + 1)/ float64(degree))
 		// adjust to interval
 		roots[k] = (roots[k] * (end - start) + start + end)/2
 	}

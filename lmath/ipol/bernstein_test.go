@@ -29,7 +29,7 @@ func TestBernsteinPolynomialInterval(t *testing.T) {
 	// ||(Bnx^2)(x) - x^2||inf = 1/(4n^2) + 1/n
 	for n := 1; n < 20; n++ {
 		bernstein := NewBernsteinInterpolation(n, f, -1, 1)
-		error := FindMaxDiff(bernstein.Function(), f, -1, 1)
+		error, _ := FindMaxDiff(bernstein.Function(), f, -1, 1)
 		experr := float64(1+4*n)/float64(4*n*n)
 		if error > experr && !liblundis.Equals(error, experr) {
 			fmt.Sprintf("degree %v error: %v > %v", n, error, experr)

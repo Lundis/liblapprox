@@ -30,6 +30,20 @@ func Max(f Func1to1, accuracy int, start, end float64) (max float64, loc float64
     return max, loc
 }
 
+func Min(f Func1to1, accuracy int, start, end float64) (min float64, loc float64) {
+    min = f(start)
+    loc = float64(start)
+    for i := 0; i < accuracy; i++ {
+        x := start + (end - start) * (float64(i)/float64(accuracy-1))
+        y := f(x)
+        if y < min {
+            min = y
+            loc = x
+        }
+    }
+    return min, loc
+}
+
 // Calculates a function repeatedly with increasing accuracy until it converges (less than 1e-6 difference).
 // Warning: can be very inefficient, crash and/or loop indefinitely for "advanced" functions
 func CalculateAccurately(f func(accuracy int) (float64, float64), initial_accuracy int) (float64, float64) {
