@@ -26,7 +26,10 @@ func (self Iteration) ErrorDiff() float64 {
 // Approximates for the specified degrees, saving the result in approx.
 // Returns details about the iterations.
 func Approximate(approx *approx.Approx, degrees []int, accuracy float64) map[int] []Iteration {
-	iters := make(map[int] []Iteration, len(degrees))
+	if accuracy <= 0 {
+		panic("exchange.Approximate(): accuracy must be >0")
+	}
+	iters := make(map[int] []Iteration)
 	for _, deg := range degrees {
 		iters[deg] = ApproximateDegree(approx, deg, accuracy)
 	}
@@ -39,6 +42,7 @@ func ApproximateDegree(approx *approx.Approx, degree int, accuracy float64) []It
 	iters := make([]Iteration, 0, 10)
 	roots := ipol.GenerateChebyshevRoots(degree+2, approx.Start, approx.End)
 	matrix := createMatrix(approx, roots)
+	// random init value.
 	diff := accuracy*2
 	// TODO: remove iter limit when this actually converges
 	for i := 0; diff > accuracy && i < 20; i++ {
@@ -95,17 +99,23 @@ func updateRoots(roots []float64, orig_func, approx_func lmath.Func1to1, loc flo
 			break;
 		}
 	}
+	fmt.Printf("roots: %v", roots)
+	fmt.Printf("max at %.4f\n", loc)
 	// then replace either it or the previous/next one, depending on sign of errors
 	root_error := orig_func(roots[i]) - approx_func(roots[i])
 	max_error := orig_func(loc) - approx_func(loc)
 	if math.Signbit(root_error) == math.Signbit(max_error) {
+		fmt.Printf("replacing %.4f\n", roots[i])
 		roots[i] = loc
+
 	} else {
 		if i == 0 {
+			fmt.Printf("replacing %.4f\n", roots[i+1])
 			roots[i+1] = loc
 			// debug
 			fmt.Printf("wat, this shouldnt happen\n")
 		} else {
+			fmt.Printf("replacing %.4f\n", roots[i-1])
 			roots[i-1] = loc
 		}
 	}

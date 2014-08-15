@@ -23,10 +23,12 @@ type ApproxGUI struct {
 	current_iter  int
 
 	approx_box   gwu.ListBox
+	accuracy_box gwu.TextBox
+	accuracy     float64
 
 	result_container  gwu.Panel
-	iteration_browser gwu.Panel
-
+	degree_buttons    gwu.Panel
+	iter_buttons      gwu.Panel
 
 	dimx_box  gwu.TextBox
 	dimy_box  gwu.TextBox
@@ -36,161 +38,103 @@ type ApproxGUI struct {
 
 	err               error
 	backend           ApproxBackend
-	accuracy          float64
 
+	message         gwu.Label
+	info_approx     gwu.Label
 	info_degree     gwu.Label
 	info_iter       gwu.Label
 	info_error      gwu.Label
 	info_optimality gwu.Label
 }
 
-func (self *ApproxGUI) BuildGUI() gwu.Comp {
-	p := gwu.NewVerticalPanel()
-	p.Add(self.buildConfigSection())
-	self.result_container = gwu.NewPanel()
-	self.updateResultBrowser()
-	p.Add(self.result_container)
-	return p
+func (self *ApproxGUI) showError(m string) {
+	self.message.SetText(m)
+	self.message.Style().SetColor(gwu.CLR_RED)
 }
 
-func (self *ApproxGUI) buildConfigSection() gwu.Comp {
-	p := gwu.NewVerticalPanel()
-	function_selector := self.buildFunctionSelector()
-	p.Add(function_selector)
-	approx_settings := self.buildApproximationSelector()
-	p.Add(approx_settings)
-	return p
+func (self *ApproxGUI) showMessage(m string) {
+	self.message.SetText(m)
+	self.message.Style().SetColor(gwu.CLR_BLACK)
 }
 
-func (self *ApproxGUI) buildFunctionSelector() gwu.Comp {
-	function_selector := gwu.NewHorizontalPanel()
-	function_selector.Add(gwu.NewLabel("Function:"))
-	lb := gwu.NewListBox([]string{"sin x", "cos x", "e^x", "1/sqrt(2*pi) * e^(-x^2 / 2"})
-	lb.SetSelected(0, true)
-	self.function_box = lb
-	function_selector.Add(self.function_box)
-	function_selector.Add(gwu.NewLabel("Intervals (separated by comma):"))
-	self.interval_box = gwu.NewTextBox("0,1")
-	function_selector.Add(self.interval_box)
-	return function_selector
+func (self *ApproxGUI) clearMessage() {
+	self.message.SetText("")
+	self.message.Style().SetColor(gwu.CLR_BLACK)
 }
 
-func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
-	approx_settings := gwu.NewHorizontalPanel()
-	approx_type := gwu.NewListBox([]string{"minimax"})
-	approx_type.SetSelected(0, true)
-	self.approx_box = approx_type
-	approx_settings.Add(approx_type)
-	degbox := gwu.NewTextBox("1,2,3")
-	self.degrees_box = degbox
-	self.degrees_box.AddSyncOnETypes(gwu.ETYPE_KEY_UP)
-	approx_settings.Add(self.degrees_box)
-
-	run_button := gwu.NewButton("Approximate!")
-	run_button.AddEHandlerFunc(func(ev gwu.Event) {
-		err := self.interpretSettings()
-		if err == nil {
-			switch self.approx_box.SelectedValue() {
-			case "minimax":
-				self.approximateMinimax()
-			default:
-				panic(fmt.Sprintf("Unknown approximation type selected: %v", self.approx_box.SelectedValue()))
-			}
-		}
-		self.updateResultBrowser()
-		ev.MarkDirty(self.result_container)
-	}, gwu.ETYPE_CLICK)
-	approx_settings.Add(run_button)
-	return approx_settings
-}
 
 func (self *ApproxGUI) updateResultBrowser() {
-	self.result_container.Clear()
+	self.clearMessage()
 	if self.err != nil {
-		err := gwu.NewLabel(self.err.Error())
-		err.Style().SetColor(gwu.CLR_RED)
-		self.result_container.Add(err)
-	} 
-	if self.backend == nil {
-		l := gwu.NewLabel("Please select a function and approximation and click on the button!")
-		self.result_container.Add(l)
-	} else {
-		p := gwu.NewVerticalPanel()
-		p.Add(self.buildDegreeSelector())
-		p.Add(self.buildIterationSelector())
-		self.result_container.Add(p)
+		self.showError(self.err.Error())
+	} else if self.backend == nil {
+		self.showMessage("Please select a function and approximation and click on the button!")
 	}
+	self.updateDegreeSelector()
+	self.updateIterationSelector()
+	self.updateGraphViewer()
+	self.updateInfoTable()
 }
 
-func (self *ApproxGUI) buildDegreeSelector() gwu.Panel {
-	p := gwu.NewNaturalPanel()
-	l := gwu.NewLabel("Degree")
-	p.Add(l)
-	for i := 0; i < len(self.degrees); i++ {
-		b := gwu.NewButton(fmt.Sprintf("%v", self.degrees[i]))
-		b.AddEHandlerFunc(func(ev gwu.Event) {
-
-			ev.MarkDirty(self.iteration_browser)
-		}, gwu.ETYPE_CLICK)
-		p.Add(b)
-	}
-	return p
-}
-
-func (self *ApproxGUI) buildIterationBrowser() gwu.Panel {
-	p := gwu.NewVerticalPanel()
-	p.Add(self.buildIterationSelector())
-	hp := gwu.NewHorizontalPanel()
-	hp.Add(self.buildGraphViewer())
-	hp.Add(self.buildInfoViewer())
-	p.Add(hp)
-	return p
-}
-
-func (self *ApproxGUI) buildIterationSelector() gwu.Panel {
-	p := gwu.NewNaturalPanel()
-	l := gwu.NewLabel("Iteration")
-	p.Add(l)
-	for i := 0; i < self.backend.Iters(self.current_deg); i++ {
-		b := gwu.NewButton(fmt.Sprintf("%v", self.degrees[i]))
-		b.AddEHandlerFunc(func(ev gwu.Event) {
-			self.current_iter = i
-			self.refreshImage(ev)
-		}, gwu.ETYPE_CLICK)
-		p.Add(b)
-	}
-	self.iteration_browser = p
-	return p
-}
-
-func (self *ApproxGUI) buildGraphViewer() gwu.Panel {
-	hp := gwu.NewHorizontalPanel()
-	vp := gwu.NewVerticalPanel()
-	l := gwu.NewLabel("Graph dimensions: ")
-	vp.Add(l)
-	self.dimx_box = gwu.NewTextBox("600")
-	self.dimx = 600
-	vp.Add(self.dimx_box)
-	self.dimy_box = gwu.NewTextBox("400")
-	self.dimy = 400
-	vp.Add(self.dimy_box)
-	b := gwu.NewButton("set")
-	b.AddEHandlerFunc(func(ev gwu.Event) {
-		if err := self.interpretImageDim(); err != nil {
-			self.refreshImage(ev)
+func (self *ApproxGUI) updateDegreeSelector() {
+	self.degree_buttons.Clear()
+	if self.backend != nil && self.err == nil {
+		for i := 0; i < len(self.degrees); i++ {
+			deg := self.degrees[i]
+			b := gwu.NewButton(fmt.Sprintf("%v", deg))
+			if self.current_deg == deg {
+				b.SetEnabled(false)
+			} else {
+				b.AddEHandlerFunc(func(ev gwu.Event) {
+					self.current_deg = deg
+					self.current_iter = 0
+					self.updateResultBrowser()
+					ev.MarkDirty(self.result_container)
+				}, gwu.ETYPE_CLICK)
+			}
+			self.degree_buttons.Add(b)
 		}
-	}, gwu.ETYPE_CLICK)
-	vp.Add(b)
-	hp.Add(vp)
-	self.image = gwu.NewImage("approximation graph", "")
-	hp.Add(self.image)
-	return hp
+	}
 }
 
-// shows the currently selected approx/iter/size
-func (self *ApproxGUI) refreshImage(ev gwu.Event) {
-	self.image.SetUrl(self.backend.ImageUrl(self.current_deg, self.current_iter, self.dimx, self.dimy))
-	ev.MarkDirty(self.image)
+func (self *ApproxGUI) updateIterationSelector() {
+	self.iter_buttons.Clear()
+	if self.backend != nil && self.err == nil {
+		for i := 0; i < self.backend.Iters(self.current_deg); i++ {
+			i_local := i // this is required for the handler function to get the right i
+			b := gwu.NewButton(fmt.Sprintf("%v", i))
+			if self.current_iter == i {
+				b.SetEnabled(false)
+			} else {
+				b.AddEHandlerFunc(func(ev gwu.Event) {
+					self.current_iter = i_local
+					self.updateResultBrowser()
+					ev.MarkDirty(self.result_container)
+				}, gwu.ETYPE_CLICK)
+			}
+			self.iter_buttons.Add(b)
+		}
+	}
+}
+
+func (self *ApproxGUI) updateGraphViewer() {
+	self.image.SetUrl("")
+	if self.backend != nil && self.err == nil {
+		self.image.SetUrl(self.backend.ImageUrl(self.current_deg, self.current_iter, self.dimx, self.dimy))
+	}
+}
+
+func (self *ApproxGUI) updateInfoTable() {
+	if self.backend != nil && self.err == nil {
+		deg := self.current_deg
+		iter := self.current_iter
+		self.info_approx.SetText(self.backend.String(deg, iter))
+		self.info_degree.SetText(fmt.Sprintf("%v", deg))
+		self.info_iter.SetText(fmt.Sprintf("%v", iter))
+		self.info_error.SetText(fmt.Sprintf("%v", self.backend.Error(deg, iter)))
+		self.info_optimality.SetText(fmt.Sprintf("%v", self.backend.Optimality(deg, iter)))
+	}
+	
 }
 
 func (self *ApproxGUI) interpretImageDim() error {
@@ -215,33 +159,16 @@ func (self *ApproxGUI) interpretImageDim() error {
 	return nil
 }
 
-func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
-	t := gwu.NewTable()
-	t.EnsureSize(4, 2)
-	t.Add(gwu.NewLabel("Degree"), 0, 0)
-	self.info_degree = gwu.NewLabel(fmt.Sprintf("%v", self.current_deg))
-	t.Add(self.info_degree, 0, 1)
-
-	t.Add(gwu.NewLabel("Iteration"), 1, 0)
-	self.info_iter = gwu.NewLabel(fmt.Sprintf("%v", self.current_iter))
-	t.Add(self.info_iter, 1, 1)
-
-	t.Add(gwu.NewLabel("Max Error"), 2, 0)
-	self.info_error = gwu.NewLabel(fmt.Sprintf("%v", -1))
-	t.Add(self.info_error, 2, 1)
-
-	t.Add(gwu.NewLabel("Optimality"), 3, 0)
-	self.info_optimality = gwu.NewLabel(fmt.Sprintf("%v", -1))
-	t.Add(self.info_optimality, 3, 1)
-	return t
-}
-
 func (self *ApproxGUI) interpretSettings() error {
 	self.err = self.interpretDegrees()
 	if self.err != nil {
 		return self.err
 	}
 	self.err = self.interpretIntervals()
+	if self.err != nil {
+		return self.err
+	}
+	self.err = self.interpretAccuracy()
 	if self.err != nil {
 		return self.err
 	}
@@ -334,6 +261,19 @@ func (self *ApproxGUI) interpretFunction() {
 	}
 }
 
+func (self *ApproxGUI) interpretAccuracy() error {
+	a, err := strconv.ParseFloat(self.accuracy_box.Text(), 64)
+	if err != nil {
+		self.err = errors.New("Error parsing accuracy")
+		return self.err
+	} else {
+		self.accuracy = a
+		return nil
+	}
+}
+
 func (self *ApproxGUI) approximateMinimax() {
 	self.backend = NewMinimaxApprox(self)
+	self.current_deg = self.degrees[0]
+	self.current_iter = 0
 }

@@ -24,7 +24,7 @@ func buildGUI(s gwu.Session) {
 	p := gwu.NewPanel()
 
 	t := gwu.NewTabPanel()
-	t.Style().SetSizePx(800, 600)
+	//t.Style().SetSizePx(1024, 600)
 	
 	approx := new(ApproxGUI)
 	approx_comp := approx.BuildGUI()
