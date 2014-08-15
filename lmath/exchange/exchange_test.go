@@ -8,10 +8,10 @@ import (
 
 func TestApproximate(t *testing.T) {
 	f := func(x float64) float64 {
-		return x*x
+		return x*x*x
 	}
 	approx := approx.NewApprox(f, 0, 1)
-	iters := Approximate(approx, []int{0, 1, 2}, 0.000001)
+	iters := Approximate(approx, []int{0, 1, 2}, 0.00000001)
 	for i, iter := range iters[0] {
 		fmt.Printf("%v: %v\n",i , iter)
 	}
@@ -23,10 +23,10 @@ func TestApproximate(t *testing.T) {
 	}
 }
 
-func TestCreatematrix(t *testing.T) {
+func TestUpdatematrix(t *testing.T) {
 
 }
 
-func TestUpdatematrix(t *testing.T) {
-
+func TestUpdateRoots(t *testing.T) {
+	
 }
