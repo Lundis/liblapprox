@@ -2,7 +2,6 @@ package main
 
 import (
 	//"code.google.com/p/liblundis/lmath/algebra"
-	. "code.google.com/p/liblundis/lmath/calculator"
 	"code.google.com/p/gowut/gwu"
 	"fmt"
 	"os"
@@ -26,10 +25,13 @@ func buildGUI(s gwu.Session) {
 
 	t := gwu.NewTabPanel()
 	t.Style().SetSizePx(800, 600)
+	
+	approx := new(ApproxGUI)
+	approx_comp := approx.BuildGUI()
+	t.AddString("Approximator", approx_comp)
+
 	calc := BuildCalculatorGUI()
 	t.AddString("Calculator", calc)
-	approx := BuildApproximatorGUI()
-	t.AddString("Approximator", approx)
 
 	p.Add(t)
 	win.Add(p)
@@ -40,8 +42,14 @@ func buildGUI(s gwu.Session) {
 func main() {
 	server := gwu.NewServer("luncalc", "localhost:8082")
 	server.SetText("Lundis Calculator")
-	server.AddSessCreatorName("main", "Calculator")
+	server.AddSessCreatorName("main", "Approximator")
 	server.AddSHandler(SessHandler{})
+
+	img_dir := ImageDir()
+	os.MkdirAll(img_dir, 0777)
+	server.AddStaticDir("img", img_dir)
+	defer os.RemoveAll(img_dir)
+
 	startConsoleReader()
 	server.Start("")
 
