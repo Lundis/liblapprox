@@ -99,21 +99,20 @@ func parseNumber(expr []byte) (*Node, error) {
 	rat := big.NewRat(1,1)
 	_, success := rat.SetString(string(expr))
 	if !success {
-		return nil, errors.New(fmt.Sprintf("Error: failed to convert %v to a number", string(expr)))
+		return nil, errors.New(fmt.Sprintf("Failed to convert %v to a number", string(expr)))
 	} else {
 		return NewRatNode(rat), nil
 	}
 }
 
 func parseVariable(expr []byte) (*Node, error) {
-	c := expr[0]
-	if len(expr) != 1 {
-		return nil, errors.New(fmt.Sprintf("Error: long (len>1) variable name: %v", string(expr)))
-	} else if !(('a' <= c && c <= 'z')||('A' <= c && c <= 'Z')) {
-		return nil, errors.New(fmt.Sprintf("Error: variable is not a letter: %v", c))
-	} else {
-		return NewVarNode(string(expr)), nil
+	for _, c := range expr {
+		if !(('a' <= c && c <= 'z')||('A' <= c && c <= 'Z')) {
+			message := fmt.Sprintf("Variable %v is not an alphabetic sentence.", string(expr))
+			return nil, errors.New(message)
+		}
 	}
+	return NewVarNode(string(expr)), nil
 }
 
 // split returns the indices where expr[index] == op1 and where expr letter2, taking into account depth (parentheses).
