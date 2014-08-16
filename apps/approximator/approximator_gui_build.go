@@ -52,6 +52,7 @@ func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
 	run_button.AddEHandlerFunc(func(ev gwu.Event) {
 		err := self.interpretSettings()
 		if err == nil {
+			fmt.Println("Approximating...")
 			switch self.approx_box.SelectedValue() {
 			case "minimax":
 				self.approximateMinimax()
@@ -59,6 +60,7 @@ func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
 				panic(fmt.Sprintf("Unknown approximation type selected: %v", self.approx_box.SelectedValue()))
 			}
 		}
+		fmt.Println("done!")
 		self.updateResultBrowser()
 		ev.MarkDirty(self.result_container)
 	}, gwu.ETYPE_CLICK)
@@ -78,10 +80,9 @@ func (self *ApproxGUI) buildResultBrowser() {
 	p.Add(self.buildDegreeSelector())
 	p.Add(self.buildIterationSelector())
 	p.Add(self.buildGraphSizeSelector())
-	hp := gwu.NewHorizontalPanel()
-	hp.Add(self.buildGraphViewer())
-	hp.Add(self.buildInfoViewer())
-	p.Add(hp)
+	p.Add(self.buildGraphViewer())
+	p.Add(self.buildInfoViewer())
+	p.Add(self.buildErrorTable())
 	self.result_container.Add(p)
 }
 
@@ -123,9 +124,13 @@ func (self *ApproxGUI) buildGraphSizeSelector() gwu.Panel {
 	return hp
 }
 
-func (self *ApproxGUI) buildGraphViewer() gwu.Comp {
+func (self *ApproxGUI) buildGraphViewer() gwu.Panel {
+	p := gwu.NewHorizontalPanel()
 	self.image = gwu.NewImage("approximation graph", "")
-	return self.image
+	p.Add(self.image)
+	self.error_image = gwu.NewImage("error graph", "")
+	p.Add(self.error_image)
+	return p
 }
 
 func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
@@ -151,5 +156,10 @@ func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
 	t.Add(gwu.NewLabel("Optimality"), 4, 0)
 	self.info_optimality = gwu.NewLabel("")
 	t.Add(self.info_optimality, 4, 1)
+	return t
+}
+
+func (self *ApproxGUI) buildErrorTable() gwu.Comp {
+	t := gwu.NewTable()
 	return t
 }

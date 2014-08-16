@@ -111,7 +111,7 @@ func (self Polynomial) String() string {
 			if !first {
 				buffer.WriteString(" + ")
 			}
-			fmt.Fprintf(&buffer, "%.4f", self[i])
+			fmt.Fprintf(&buffer, "%.6f", self[i])
 			if i != 0 {
 				fmt.Fprintf(&buffer, "*x^%d", i)
 			}

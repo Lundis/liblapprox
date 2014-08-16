@@ -30,11 +30,12 @@ type ApproxGUI struct {
 	degree_buttons    gwu.Panel
 	iter_buttons      gwu.Panel
 
-	dimx_box  gwu.TextBox
-	dimy_box  gwu.TextBox
-	dimx      int
-	dimy      int
-	image     gwu.Image
+	dimx_box    gwu.TextBox
+	dimy_box    gwu.TextBox
+	dimx        int
+	dimy        int
+	image       gwu.Image
+	error_image gwu.Image
 
 	err               error
 	backend           ApproxBackend
@@ -74,6 +75,7 @@ func (self *ApproxGUI) updateResultBrowser() {
 	self.updateIterationSelector()
 	self.updateGraphViewer()
 	self.updateInfoTable()
+	self.updateErrorTable()
 }
 
 func (self *ApproxGUI) updateDegreeSelector() {
@@ -119,8 +121,11 @@ func (self *ApproxGUI) updateIterationSelector() {
 
 func (self *ApproxGUI) updateGraphViewer() {
 	self.image.SetUrl("")
+	self.error_image.SetUrl("")
 	if self.backend != nil && self.err == nil {
 		self.image.SetUrl(self.backend.ImageUrl(self.current_deg, self.current_iter, self.dimx, self.dimy))
+		self.error_image.SetUrl(self.backend.ErrorGraphUrl(self.current_deg, self.current_iter, self.dimx, self.dimy))
+
 	}
 }
 
@@ -134,6 +139,10 @@ func (self *ApproxGUI) updateInfoTable() {
 		self.info_error.SetText(fmt.Sprintf("%v", self.backend.Error(deg, iter)))
 		self.info_optimality.SetText(fmt.Sprintf("%v", self.backend.Optimality(deg, iter)))
 	}
+	
+}
+
+func (self *ApproxGUI) updateErrorTable() {
 	
 }
 
@@ -273,6 +282,7 @@ func (self *ApproxGUI) interpretAccuracy() error {
 }
 
 func (self *ApproxGUI) approximateMinimax() {
+	fmt.Println("Approximating minimax...")
 	self.backend = NewMinimaxApprox(self)
 	self.current_deg = self.degrees[0]
 	self.current_iter = 0

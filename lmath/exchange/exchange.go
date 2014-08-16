@@ -94,29 +94,39 @@ func interpretSolution(matrix algebra.Matrix) (lmath.Polynomial, float64) {
 func updateRoots(roots []float64, orig_func, approx_func lmath.Func1to1, loc float64) {
 	// find the first root larger than loc
 	i := 0
-	for ; i < len(roots)-1; i++ {
+	for ; i < len(roots); i++ {
 		if roots[i] >= loc {
 			break;
 		}
 	}
-	fmt.Printf("roots: %v", roots)
 	fmt.Printf("max at %.4f\n", loc)
-	// then replace either it or the previous/next one, depending on sign of errors
+	PrintFancy(roots)
+	if i == len(roots) { // loc is last
+		fmt.Printf("replacing (last) %.4f\n", roots[i-1])
+		fmt.Println()
+		roots[i-1] = loc
+		return
+	}
+	// i is now larger than loc
+	
+	
+	// then replace either it or the previous one, depending on sign of errors
 	root_error := orig_func(roots[i]) - approx_func(roots[i])
 	max_error := orig_func(loc) - approx_func(loc)
 	if math.Signbit(root_error) == math.Signbit(max_error) {
 		fmt.Printf("replacing %.4f\n", roots[i])
 		roots[i] = loc
-
 	} else {
-		if i == 0 {
-			fmt.Printf("replacing %.4f\n", roots[i+1])
-			roots[i+1] = loc
-			// debug
-			fmt.Printf("wat, this shouldnt happen\n")
-		} else {
-			fmt.Printf("replacing %.4f\n", roots[i-1])
-			roots[i-1] = loc
-		}
+		fmt.Printf("replacing (previous) %.4f\n", roots[i-1])
+		roots[i-1] = loc
 	}
+	fmt.Println()	
+}
+
+func PrintFancy(roots []float64) {
+	fmt.Print("[")
+	for _, v := range roots {
+		fmt.Printf("%.4f ", v)
+	}
+	fmt.Println("]")
 }

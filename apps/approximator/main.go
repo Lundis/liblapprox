@@ -20,28 +20,18 @@ func (h SessHandler) Removed(s gwu.Session) {
 
 
 func buildGUI(s gwu.Session) {
-	win := gwu.NewWindow("main", "Calculator")
-	p := gwu.NewPanel()
-
-	t := gwu.NewTabPanel()
-	//t.Style().SetSizePx(1024, 600)
+	win := gwu.NewWindow("main", "Approximator")
 	
 	approx := new(ApproxGUI)
 	approx_comp := approx.BuildGUI()
-	t.AddString("Approximator", approx_comp)
-
-	calc := BuildCalculatorGUI()
-	t.AddString("Calculator", calc)
-
-	p.Add(t)
-	win.Add(p)
+	win.Add(approx_comp)
 	s.AddWin(win)
 }
 
 
 func main() {
 	server := gwu.NewServer("luncalc", "localhost:8082")
-	server.SetText("Lundis Calculator")
+	server.SetText("Lundis Approximator")
 	server.AddSessCreatorName("main", "Approximator")
 	server.AddSHandler(SessHandler{})
 
