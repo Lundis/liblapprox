@@ -5,18 +5,18 @@ import (
     //"fmt"
 )
 
-type Func1to1 func(float64) float64
+type Function func(float64) float64
 
 type Vector []float64
 
 
-func ZeroFunc() Func1to1 {
+func ZeroFunc() Function {
     return func(x float64) float64 {
         return 0
     }
 }
 
-func Max(f Func1to1, accuracy int, start, end float64) (max float64, loc float64) {
+func Max(f Function, accuracy int, start, end float64) (max float64, loc float64) {
     max = f(start)
     loc = float64(start)
     for i := 0; i < accuracy; i++ {
@@ -30,7 +30,7 @@ func Max(f Func1to1, accuracy int, start, end float64) (max float64, loc float64
     return max, loc
 }
 
-func Min(f Func1to1, accuracy int, start, end float64) (min float64, loc float64) {
+func Min(f Function, accuracy int, start, end float64) (min float64, loc float64) {
     min = f(start)
     loc = float64(start)
     for i := 0; i < accuracy; i++ {
@@ -58,13 +58,13 @@ func CalculateAccurately(f func(accuracy int) (float64, float64), initial_accura
     return iter2, loc
 }
 
-func FuncAbsDiff(f, g Func1to1) Func1to1 {
+func FuncAbsDiff(f, g Function) Function {
     return func(x float64) float64 {
         return math.Abs(f(x) - g(x))
     }
 }
 
-func Values(f Func1to1, x Vector) Vector {
+func Values(f Function, x Vector) Vector {
     y := make([]float64, len(x))
     for i, v := range x {
         y[i] = f(v)
@@ -72,7 +72,7 @@ func Values(f Func1to1, x Vector) Vector {
     return y
 }
 
-func FindMaxDiff(f, g Func1to1, start, end float64) (max_diff, loc float64) {
+func FindMaxDiff(f, g Function, start, end float64) (max_diff, loc float64) {
     fgdiff := FuncAbsDiff(f, g)
     max_diff, loc = CalculateAccurately(func(accuracy int) (float64, float64) {
         return Max(fgdiff, accuracy, start, end)

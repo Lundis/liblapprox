@@ -2,6 +2,7 @@ package ipol
 
 import (
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/poly"
 )
 
 func CreateFejerHermitePolynomialvv(x, y Vector, start, end float64) BigPoly {
@@ -17,7 +18,7 @@ func CreateFejerHermitePolynomialvv(x, y Vector, start, end float64) BigPoly {
 	return sum
 }
 
-func CreateFejerHermitePolynomialvf(x Vector, f Func1to1, start, end float64) BigPoly {
+func CreateFejerHermitePolynomialvf(x Vector, f Function, start, end float64) BigPoly {
 	y := Values(f, x)
 	return CreateFejerHermitePolynomialvv(x, y, start, end)
 }

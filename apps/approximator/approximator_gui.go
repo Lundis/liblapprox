@@ -2,7 +2,7 @@ package main
 
 import (
 	"code.google.com/p/liblundis/lmath"
-	"code.google.com/p/liblundis/lmath/algebra"
+	"code.google.com/p/liblundis/lmath/expr"
 	"code.google.com/p/gowut/gwu"
 	"strings"
 	"strconv"
@@ -13,7 +13,7 @@ import (
 
 type ApproxGUI struct {
 	function_box         gwu.ListBox
-	function             lmath.Func1to1
+	function             lmath.Function
 	interval_box         gwu.TextBox
 	ival_start, ival_end float64
 
@@ -36,6 +36,7 @@ type ApproxGUI struct {
 	dimy        int
 	image       gwu.Image
 	error_image gwu.Image
+	error_table gwu.Table
 
 	err               error
 	backend           ApproxBackend
@@ -143,7 +144,38 @@ func (self *ApproxGUI) updateInfoTable() {
 }
 
 func (self *ApproxGUI) updateErrorTable() {
-	
+	self.error_table.Clear()
+	rows := len(self.degrees) + 1
+	cols := 1
+	for _, deg := range self.degrees {
+		iters := self.backend.Iters(deg)
+		if iters > cols {
+			cols = iters
+		}
+	}
+	cols += 1
+	self.error_table.EnsureSize(rows, cols)
+
+	self.error_table.Add(gwu.NewLabel("degs\\iters"), 0, 0)
+	// column header
+	for c := 1; c < cols; c++ {
+		self.error_table.Add(gwu.NewLabel(fmt.Sprintf("%v", c-1)), 0, c)
+	}
+
+	for r := 1; r < rows; r++ {
+		deg := self.degrees[r-1]
+		// row header
+		self.error_table.Add(gwu.NewLabel(fmt.Sprintf("%v", deg)), r, 0)
+		c := 1
+		for ; c < self.backend.Iters(deg) + 1; c++ {
+			iter := c - 1
+			l := gwu.NewLabel(fmt.Sprintf("%.6f", self.backend.Error(deg, iter)))
+			self.error_table.Add(l, r, c)
+		}
+		for ; c < cols; c++ {
+			self.error_table.Add(gwu.NewLabel("-"), r, c)
+		}
+	}
 }
 
 func (self *ApproxGUI) interpretImageDim() error {
@@ -232,11 +264,11 @@ func (self *ApproxGUI) interpretIntervals() error {
 	if len(split) != 2 {
 		return errors.New("interval endpoints must be separated by a comma")
 	}
-	first, err := algebra.EvalCommonf64(split[0])
+	first, err := expr.EvalCommonf64(split[0])
 	if err != nil {
 		return err
 	}
-	second, err := algebra.EvalCommonf64(split[1])
+	second, err := expr.EvalCommonf64(split[1])
 	if err != nil {
 		return err
 	}

@@ -1,10 +1,10 @@
 package lmath
 
-func LInfNorm1f1(f Func1to1, start, end float64) (float64, float64) {
+func LInfNorm1f1(f Function, start, end float64) (float64, float64) {
 	return FindMaxDiff(ZeroFunc(), f, start, end)
 }
 
 // Not Implemented...
-func LpNorm1f1(f Func1to1) float64 {
+func LpNorm1f1(f Function) float64 {
 	return 0
 }

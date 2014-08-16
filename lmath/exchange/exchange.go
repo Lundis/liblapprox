@@ -1,7 +1,8 @@
 package exchange
 
 import (
-	"code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/poly"
 	"code.google.com/p/liblundis/lmath/algebra"
 	"code.google.com/p/liblundis/lmath/ipol"
 	"code.google.com/p/liblundis/lmath/approx"
@@ -11,12 +12,12 @@ import (
 
 type Iteration struct {
 	Max_error, Leveled_error float64
-	Poly lmath.Polynomial
+	Poly Poly
 }
 
 func (self Iteration) String() string {
 	format := "%v || error: %.6f || error_diff: %.6f"
-	return fmt.Sprintf(format, self.Poly, self.Max_error, self.ErrorDiff)
+	return fmt.Sprintf(format, self.Poly, self.Max_error, self.ErrorDiff())
 }
 
 func (self Iteration) ErrorDiff() float64 {
@@ -52,7 +53,7 @@ func ApproximateDegree(approx *approx.Approx, degree int, accuracy float64) []It
 		iter := Iteration{}
 		iter.Poly, iter.Leveled_error = interpretSolution(matrix)
 		var loc float64
-		iter.Max_error, loc = lmath.FindMaxDiff(approx.Func, iter.Poly.Function(), approx.Start, approx.End)
+		iter.Max_error, loc = FindMaxDiff(approx.Func, iter.Poly.Function(), approx.Start, approx.End)
 		diff = iter.Max_error - iter.Leveled_error
 		iters = append(iters, iter)
 		updateRoots(roots, approx.Func, iter.Poly.Function(), loc)
@@ -82,8 +83,8 @@ func updateMatrix(m algebra.Matrix, approx *approx.Approx, roots []float64) {
 
 
 // interprets the solution and returns the polynomial and the leveled error
-func interpretSolution(matrix algebra.Matrix) (lmath.Polynomial, float64) {
-	poly := lmath.NewPolynomial(len(matrix)-2)
+func interpretSolution(matrix algebra.Matrix) (Poly, float64) {
+	poly := NewPoly(len(matrix)-2)
 	last_col := len(matrix[0]) - 1
 	for row := 0; row < len(matrix)-1; row++ {
 		poly[row] = matrix[row][last_col]
@@ -91,7 +92,7 @@ func interpretSolution(matrix algebra.Matrix) (lmath.Polynomial, float64) {
 	return poly, math.Abs(matrix[len(matrix)-1][last_col])
 }
 
-func updateRoots(roots []float64, orig_func, approx_func lmath.Func1to1, loc float64) {
+func updateRoots(roots []float64, orig_func, approx_func Function, loc float64) {
 	// find the first root larger than loc
 	i := 0
 	for ; i < len(roots); i++ {

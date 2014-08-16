@@ -4,7 +4,6 @@ import(
 	"math"
 	"math/rand"
 	"testing"
-    "code.google.com/p/liblundis"
 )
 
 func TestMax(t *testing.T) {
@@ -15,7 +14,7 @@ func TestMax(t *testing.T) {
     		return -math.Pow(x-x0, 2.0)
     	}
     	max, loc := Max(f, 400, x0 - 1.054213, x0 + 1.1236578234)
-    	if !liblundis.Equals(max, 0) {
+    	if !EqualsFloat(max, 0, 1e-6) {
     		t.Errorf("max == %v. Should be 0", max)
     	}
         if math.Abs(loc - x0) > 0.001 {

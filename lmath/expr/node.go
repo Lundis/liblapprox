@@ -1,10 +1,11 @@
-package algebra
-
+package expr
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
+	"code.google.com/p/liblundis/lmath"
 )
 
 type Operator int
@@ -14,14 +15,14 @@ const (
 	MINUS
 	MULT
 	DIV
-	VAR
-	RAT
+	POW
+	ATOM
 )
 
 type Node struct {
 	op Operator
 	nodes []*Node
-	data Atom
+	data *Atom
 }
 
 func (self *Node) childrenStrings() []string {
@@ -42,18 +43,10 @@ func (self *Node) String() string {
 		return strings.Join(self.childrenStrings(), " * ")
 	case DIV:
 		return self.nodes[0].String() + " / " + self.nodes[1].String()
-	case VAR:
-		v := self.data.(Variable)
-		return v.Identifier
-	case RAT:
-		rat := self.data.(ScalarRat).Value
-		str := rat.String()
-		if rat.IsInt() {
-			// remove redundant "/1"
-			return str[:len(str)-2]
-		} else {
-			return str
-		}
+	case POW:
+		return self.nodes[0].String() + " ^ " + self.nodes[1].String()
+	case ATOM:
+		return self.data.String()
 	default:
 		panic(fmt.Sprintf("Unknown Node type in String(): %v", self.op))
 	}
@@ -91,17 +84,26 @@ func NewDivNode(n1, n2 *Node) *Node {
 	return m
 }
 
+func NewPowNode(n1, n2 *Node) *Node {
+	m := new(Node)
+	m.op = POW
+	m.nodes = make([]*Node, 2)
+	m.nodes[0] = n1
+	m.nodes[1] = n2
+	return m
+}
+
 func NewRatNode(num *big.Rat) *Node {
 	m := new(Node)
-	m.op = RAT
-	m.data = ScalarRat{num}
+	m.op = ATOM
+	m.data = NewAtomVal(num)
 	return m
 }
 
 func NewVarNode(id string) *Node {
 	m := new(Node)
-	m.op = VAR
-	m.data = Variable{id}
+	m.op = ATOM
+	m.data = NewAtomVar(id)
 	return m
 }
 
@@ -147,11 +149,50 @@ func (self *Node) Evaluate(vars map[string] *big.Rat) (*big.Rat, error) {
 		result.Inv(result)
 		
 		return result.Mul(result, first), nil
-	case VAR:
-		fallthrough
-	case RAT:
+	case POW:
+		first, err1 := self.nodes[0].Evaluate(vars)
+		if err1 != nil {
+			return nil, err1
+		}
+		second, err2 := self.nodes[1].Evaluate(vars)
+		if err2 != nil {
+			return nil, err2
+		}
+		f1, _ := first.Float64()
+		f2, _ := second.Float64()
+		result := big.NewRat(1, 1)
+		return result.SetFloat64(math.Pow(f1, f2)), nil
+	case ATOM:
 		return self.data.Evaluate(vars)
 	default:
 		return nil, errors.New(fmt.Sprintf("Evaluate(): Unknown op: %v", self.op))
+	}
+}
+
+func (self *Node) Replace(vars map[string] *big.Rat) {
+	switch self.op {
+	case PLUS:
+		fallthrough
+	case MINUS:
+		fallthrough
+	case MULT:
+		fallthrough
+	case DIV:
+		fallthrough
+	case POW:
+		for _, v := range self.nodes {
+			v.Replace(vars)
+		}
+	case ATOM:
+		self.data.Replace(vars)
+		
+	default:
+	}
+}
+
+// This function assumes that the variable is called x
+func (self *Node) Function() lmath.Function {
+	return func (x float64) float64 {
+		return 0
 	}
 }

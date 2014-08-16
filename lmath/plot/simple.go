@@ -10,7 +10,7 @@ import (
 
 var colors []color.Color = []color.Color{color.RGBA{A:255}, color.RGBA{R: 255, A:255}, color.RGBA{G: 255, A:255}, color.RGBA{R: 255, G: 255, A:255}, color.RGBA{R: 255, B: 255, A:255}, color.RGBA{G: 255, B: 255, A:255}}
 
-func SaveSimpleGraph(funcs []lmath.Func1to1, labels []string, start, end float64, title string, filename string, w, h int) {
+func SaveSimpleGraph(funcs []lmath.Function, labels []string, start, end float64, title string, filename string, w, h int) {
     if len(funcs) != len(labels) {
         panic("SaveSimpleGraph: all functions must have labels")
     }

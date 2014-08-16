@@ -65,8 +65,8 @@ func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
 		ev.MarkDirty(self.result_container)
 	}, gwu.ETYPE_CLICK)
 	approx_settings.Add(gwu.NewLabel("Accuracy: "))
-	self.accuracy_box = gwu.NewTextBox("0.0000005")
-	self.accuracy = 0.0000005
+	self.accuracy_box = gwu.NewTextBox("1e-7")
+	self.accuracy = 1e-7
 	approx_settings.Add(self.accuracy_box)
 	approx_settings.Add(run_button)
 	return approx_settings
@@ -160,6 +160,8 @@ func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
 }
 
 func (self *ApproxGUI) buildErrorTable() gwu.Comp {
-	t := gwu.NewTable()
-	return t
+	self.error_table = gwu.NewTable()
+	self.error_table.SetCellPadding(4)
+	self.error_table.Style().SetBorder2(1, gwu.BRD_STYLE_SOLID, gwu.CLR_BLACK)
+	return self.error_table
 }

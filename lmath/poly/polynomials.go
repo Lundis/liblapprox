@@ -1,30 +1,30 @@
-package lmath
+package poly
 
 import (
 	"bytes"
 	"fmt"
-	"code.google.com/p/liblundis"
+	"code.google.com/p/liblundis/lmath"
 )
 
-type Polynomial []float64
+type Poly []float64
 
-func NewPolynomial(degree int) Polynomial {
+func NewPoly(degree int) Poly {
 	return make([]float64, degree + 1)
 }
 
-func (self Polynomial) Copy() Polynomial {
-	poly := NewPolynomial(self.Degree())
+func (self Poly) Copy() Poly {
+	poly := NewPoly(self.Degree())
 	copy(poly, self)
 	return poly
 }
 
-func (self Polynomial) Degree() int {
+func (self Poly) Degree() int {
 	return len(self) - 1
 }
 
-func (self Polynomial) Plus(other Polynomial) Polynomial {
+func (self Poly) Plus(other Poly) Poly {
 	
-	var higher, lower Polynomial
+	var higher, lower Poly
 	if self.Degree() >= other.Degree() {
 		higher = self
 		lower = other
@@ -41,7 +41,7 @@ func (self Polynomial) Plus(other Polynomial) Polynomial {
 	return poly
 }
 
-func (self Polynomial) MultConstant(k float64) Polynomial {
+func (self Poly) MultConstant(k float64) Poly {
 	poly := self.Copy()
 	for i := range poly {
 		poly[i] *= k
@@ -49,13 +49,13 @@ func (self Polynomial) MultConstant(k float64) Polynomial {
 	return poly
 }
 
-func (self Polynomial) Minus(other Polynomial) Polynomial {
+func (self Poly) Minus(other Poly) Poly {
 	return self.Plus(other.MultConstant(-1))
 }
 
-func (self Polynomial) Mult(other Polynomial) Polynomial {
+func (self Poly) Mult(other Poly) Poly {
 	degree := self.Degree() + other.Degree()
-	poly := NewPolynomial(degree)
+	poly := NewPoly(degree)
 	for grade1, val1 := range self {
 		for grade2, val2 := range other {
 			poly[grade1 + grade2] += val1*val2
@@ -65,9 +65,9 @@ func (self Polynomial) Mult(other Polynomial) Polynomial {
 }
 
 // TODO: this could be made more numerically stable for large values of k
-func (self Polynomial) Pow(k int) Polynomial {
+func (self Poly) Pow(k int) Poly {
 	if k == 0 {
-		return Polynomial{1}
+		return Poly{1}
 	}
 	poly := self.Copy()
 	for i := 1; i < k; i++ {
@@ -76,7 +76,7 @@ func (self Polynomial) Pow(k int) Polynomial {
 	return poly
 }
 
-func (self Polynomial) ValueAt(x float64) float64 {
+func (self Poly) ValueAt(x float64) float64 {
 	x_val := float64(1)
 	sum := self[0]
 	for i := 1; i < len(self); i++ {
@@ -86,28 +86,28 @@ func (self Polynomial) ValueAt(x float64) float64 {
 	return sum
 }
 
-func (self Polynomial) Derive() Polynomial {
+func (self Poly) Derive() Poly {
 	if self.Degree() == 0 {
-		return Polynomial{0}
+		return Poly{0}
 	}
-	d := NewPolynomial(self.Degree() - 1)
+	d := NewPoly(self.Degree() - 1)
 	for i := 0; i <= d.Degree(); i++ {
 		d[i] = float64(i+1)*self[i+1]
 	}
 	return d
 }
 
-func (self Polynomial) Function() Func1to1 {
+func (self Poly) Function() lmath.Function {
 	return func(x float64) float64 {
 		return self.ValueAt(x)
 	}
 }
 
-func (self Polynomial) String() string {
+func (self Poly) String() string {
 	var buffer bytes.Buffer
 	first := true
 	for i := len(self) - 1; i >= 0; i-- {
-		if !liblundis.Equals(self[i], 0) {
+		if !lmath.EqualsFloat(self[i], 0, 1e-6) {
 			if !first {
 				buffer.WriteString(" + ")
 			}

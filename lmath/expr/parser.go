@@ -1,4 +1,4 @@
-package algebra
+package expr
 
 import (
 	"math/big"

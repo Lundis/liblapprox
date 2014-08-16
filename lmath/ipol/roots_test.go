@@ -4,6 +4,7 @@ import (
 	"testing"
 	"math"
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/poly"
 	"fmt"
 )
 
@@ -16,7 +17,7 @@ func TestGenerateChebyshevRoots(t *testing.T) {
 	y := Values(f, x)
 	assertLagrangeInterpolation(t, x, y)
 
-	poly11 := Polynomial{0, -11, 0, 220, 0, -1232, 0, 2816, 0, -2816, 0, 1024}
+	poly11 := Poly{0, -11, 0, 220, 0, -1232, 0, 2816, 0, -2816, 0, 1024}
 
 	// check that the roots are actually roots
 	for i, xi := range x {
@@ -25,9 +26,8 @@ func TestGenerateChebyshevRoots(t *testing.T) {
 }
 
 // Tests that the roots are in order
-func TestGenerateChebyshevRoots2(t *testing.T) {
+func TestGenerateChebyshevRoots_InOrder(t *testing.T) {
 	roots := GenerateChebyshevRoots(3, -1, 1)
-	fmt.Println(roots)
 	for i := 0; i < len(roots)-1; i++ {
 		if roots[i] > roots[i+1] {
 			t.Errorf("roots are not in order")

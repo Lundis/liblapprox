@@ -1,24 +1,13 @@
-package lmath
+package poly
 
 import (
 	"bytes"
 	"fmt"
 	"math/big"
+	. "code.google.com/p/liblundis/lmath"
 )
 
 type BigPoly []*big.Rat
-
-func NewRatf(k float64) *big.Rat {
-	return big.NewRat(1,1).SetFloat64(k)
-}
-
-func NewRati(k int) *big.Rat {
-	return big.NewRat(int64(k),1)
-}
-
-func NewRati64(k int64) *big.Rat {
-	return big.NewRat(k,1)
-}
 
 func NewBigPoly(degree int) BigPoly {
 	poly := make([]*big.Rat, degree + 1)
@@ -182,7 +171,7 @@ func (self BigPoly) Derive() BigPoly {
 	return d
 }
 
-func (self BigPoly) Function() Func1to1 {
+func (self BigPoly) Function() Function {
 	return func(x float64) float64 {
 		return self.ValueAtf64(x)
 	}

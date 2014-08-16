@@ -2,6 +2,7 @@ package ipol
 
 import (
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/poly"
 )
 
 func L_k(k int, x Vector) BigPoly {

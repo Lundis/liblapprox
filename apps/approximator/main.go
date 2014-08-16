@@ -40,23 +40,6 @@ func main() {
 	server.AddStaticDir("img", img_dir)
 	defer os.RemoveAll(img_dir)
 
-	startConsoleReader()
 	server.Start("")
 
-}
-
-func startConsoleReader() {
-	fmt.Println("Type 'r' to restart, 'e' to exit.")
-	go func() {
-		var cmd string
-		for {
-			fmt.Scanf("%s", &cmd)
-			switch cmd {
-			case "r": // restart
-				os.Exit(1)
-			case "e": // exit
-				os.Exit(0)
-			}
-		}
-	}()
 }

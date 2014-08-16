@@ -1,8 +1,9 @@
-package lmath
+package poly
 
 import (
 	"testing"
 	"math/big"
+	. "code.google.com/p/liblundis/lmath"
 )
 
 func TestBigPolyDegree(t *testing.T) {

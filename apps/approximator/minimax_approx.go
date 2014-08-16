@@ -23,7 +23,7 @@ func NewMinimaxApprox(data *ApproxGUI) *MinimaxApprox {
 	return newMinimaxApprox(data.degrees, data.function, data.ival_start, data.ival_end, data.accuracy)
 }
 
-func newMinimaxApprox(degs []int, f lmath.Func1to1, start, end, accuracy float64) *MinimaxApprox {
+func newMinimaxApprox(degs []int, f lmath.Function, start, end, accuracy float64) *MinimaxApprox {
 	mma := new(MinimaxApprox)
 	mma.id = "minimax" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	mma.approx = approx.NewApprox(f, start, end)
@@ -53,7 +53,7 @@ func ExistsFile(file string) bool {
 
 func (self MinimaxApprox) generateImage(deg, iter, dimx, dimy int) {
 	filepath := ImageDir() + string(os.PathSeparator) + self.filename(deg, iter, dimx, dimy)
-	funcs := []lmath.Func1to1{self.approx.Func, self.iters[deg][iter].Poly.Function()}
+	funcs := []lmath.Function{self.approx.Func, self.iters[deg][iter].Poly.Function()}
 	labels := []string{"f", "p"}
 	title := fmt.Sprintf("minimax deg %v, iter %v", deg, iter)
 	plot.SaveSimpleGraph(funcs, labels, self.approx.Start, self.approx.End, title, filepath, dimx, dimy)
@@ -83,7 +83,7 @@ func (self MinimaxApprox) generateErrorGraph(deg, iter, dimx, dimy int) {
 	hm := func(x float64) float64 {
 		return -h
 	}
-	funcs := []lmath.Func1to1{z, f, hp, hm}
+	funcs := []lmath.Function{z, f, hp, hm}
 	labels := []string{"0", "e = f - p", "h", "-h"}
 	title := fmt.Sprintf("error deg %v, iter %v", deg, iter)
 	plot.SaveSimpleGraph(funcs, labels, self.approx.Start, self.approx.End, title, filepath, dimx, dimy)
