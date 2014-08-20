@@ -27,10 +27,23 @@ func (self *ApproxGUI) buildConfigSection() gwu.Comp {
 func (self *ApproxGUI) buildFunctionSelector() gwu.Comp {
 	function_selector := gwu.NewHorizontalPanel()
 	function_selector.Add(gwu.NewLabel("Function:"))
-	lb := gwu.NewListBox([]string{"sin x", "cos x", "e^x", "1/sqrt(2*pi) * e^(-x^2 / 2"})
+	lb := gwu.NewListBox([]string{"sin x", "cos x", "e^x", "1/sqrt(2*pi) * e^(-x^2 / 2", "custom: "})
 	lb.SetSelected(0, true)
+
+	custom_func_panel := gwu.NewHorizontalPanel()
+	self.custom_func = gwu.NewTextBox("")
+
+	lb.AddEHandlerFunc(func(ev gwu.Event) {
+		custom_func_panel.Clear()
+		if lb.SelectedValue() == "custom: " {
+			custom_func_panel.Add(self.custom_func)
+		}
+		ev.MarkDirty(custom_func_panel)
+	}, gwu.ETYPE_CHANGE)
 	self.function_box = lb
 	function_selector.Add(self.function_box)
+	
+	function_selector.Add(custom_func_panel)
 	function_selector.Add(gwu.NewLabel("Intervals (separated by comma):"))
 	self.interval_box = gwu.NewTextBox("0,1")
 	function_selector.Add(self.interval_box)
@@ -125,7 +138,7 @@ func (self *ApproxGUI) buildGraphSizeSelector() gwu.Panel {
 }
 
 func (self *ApproxGUI) buildGraphViewer() gwu.Panel {
-	p := gwu.NewHorizontalPanel()
+	p := gwu.NewNaturalPanel()
 	self.image = gwu.NewImage("approximation graph", "")
 	p.Add(self.image)
 	self.error_image = gwu.NewImage("error graph", "")
@@ -133,35 +146,14 @@ func (self *ApproxGUI) buildGraphViewer() gwu.Panel {
 	return p
 }
 
-func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
-	t := gwu.NewTable()
-	t.EnsureSize(5, 2)
-
-	t.Add(gwu.NewLabel("Approximation"), 0, 0)
-	self.info_approx = gwu.NewLabel("")
-	t.Add(self.info_approx, 0, 1)
-
-	t.Add(gwu.NewLabel("Degree"), 1, 0)
-	self.info_degree = gwu.NewLabel("")
-	t.Add(self.info_degree, 1, 1)
-
-	t.Add(gwu.NewLabel("Iteration"), 2, 0)
-	self.info_iter = gwu.NewLabel("")
-	t.Add(self.info_iter, 2, 1)
-
-	t.Add(gwu.NewLabel("Max Error"), 3, 0)
-	self.info_error = gwu.NewLabel("")
-	t.Add(self.info_error, 3, 1)
-
-	t.Add(gwu.NewLabel("Optimality"), 4, 0)
-	self.info_optimality = gwu.NewLabel("")
-	t.Add(self.info_optimality, 4, 1)
-	return t
-}
-
 func (self *ApproxGUI) buildErrorTable() gwu.Comp {
 	self.error_table = gwu.NewTable()
 	self.error_table.SetCellPadding(4)
 	self.error_table.Style().SetBorder2(1, gwu.BRD_STYLE_SOLID, gwu.CLR_BLACK)
 	return self.error_table
+}
+
+func (self *ApproxGUI) buildInfoViewer() gwu.Comp {
+	self.info_box = gwu.NewPanel()
+	return self.info_box
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/gowut/gwu"
 )
 
 type ApproxBackend interface {
@@ -21,4 +22,8 @@ type ApproxBackend interface {
 
 	// Returns the number of iterations for a specific degree
 	Iters(deg int) int
+
+	BuildInfoTable() gwu.Comp
+
+	UpdateInfoTable(deg, iter int)
 }

@@ -5,7 +5,7 @@ import (
 	"math"
 	"math/big"
 	"strings"
-	"code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath"
 )
 
 type Operator int
@@ -17,12 +17,13 @@ const (
 	DIV
 	POW
 	ATOM
+	FUNC
 )
 
 type Node struct {
 	op Operator
 	nodes []*Node
-	data *Atom
+	data Atom
 }
 
 func (self *Node) childrenStrings() []string {
@@ -47,6 +48,8 @@ func (self *Node) String() string {
 		return self.nodes[0].String() + " ^ " + self.nodes[1].String()
 	case ATOM:
 		return self.data.String()
+	case FUNC:
+		return self.data.String() + "(" + self.nodes[0].String() + ")"
 	default:
 		panic(fmt.Sprintf("Unknown Node type in String(): %v", self.op))
 	}
@@ -93,24 +96,31 @@ func NewPowNode(n1, n2 *Node) *Node {
 	return m
 }
 
+func NewFunctionNode(a Atom) *Node {
+	n := new(Node)
+	n.op = FUNC
+	n.data = a
+	return n
+}
+
 func NewRatNode(num *big.Rat) *Node {
 	m := new(Node)
 	m.op = ATOM
-	m.data = NewAtomVal(num)
+	m.data = NewLiteralVal(num)
 	return m
 }
 
 func NewVarNode(id string) *Node {
 	m := new(Node)
 	m.op = ATOM
-	m.data = NewAtomVar(id)
+	m.data = NewLiteralVar(id)
 	return m
 }
 
 func (self *Node) Evaluate(vars map[string] *big.Rat) (*big.Rat, error) {
 	switch self.op {
 	case PLUS:
-		sum := big.NewRat(0, 1)
+		sum := NewRati(0)
 		for _, v := range self.nodes {
 			val, err := v.Evaluate(vars)
 			if err != nil {
@@ -120,14 +130,14 @@ func (self *Node) Evaluate(vars map[string] *big.Rat) (*big.Rat, error) {
 		}
 		return sum, nil
 	case MINUS:
-		inv := big.NewRat(-1, 1)
+		inv := NewRati(-1)
 		val, err := self.nodes[0].Evaluate(vars)
 		if err != nil {
 			return nil, err
 		}
 		return inv.Mul(inv, val), nil
 	case MULT:
-		prod := big.NewRat(1, 1)
+		prod := NewRati(1)
 		for _, v := range self.nodes {
 			val, err := v.Evaluate(vars)
 			if err != nil {
@@ -145,9 +155,8 @@ func (self *Node) Evaluate(vars map[string] *big.Rat) (*big.Rat, error) {
 		if err2 != nil {
 			return nil, err2
 		}
-		result := big.NewRat(1, 1).Set(second)
+		result := NewRat(second)
 		result.Inv(result)
-		
 		return result.Mul(result, first), nil
 	case POW:
 		first, err1 := self.nodes[0].Evaluate(vars)
@@ -163,6 +172,8 @@ func (self *Node) Evaluate(vars map[string] *big.Rat) (*big.Rat, error) {
 		result := big.NewRat(1, 1)
 		return result.SetFloat64(math.Pow(f1, f2)), nil
 	case ATOM:
+		fallthrough
+	case FUNC:
 		return self.data.Evaluate(vars)
 	default:
 		return nil, errors.New(fmt.Sprintf("Evaluate(): Unknown op: %v", self.op))
@@ -183,16 +194,57 @@ func (self *Node) Replace(vars map[string] *big.Rat) {
 		for _, v := range self.nodes {
 			v.Replace(vars)
 		}
+	case FUNC:
+		fallthrough
 	case ATOM:
 		self.data.Replace(vars)
-		
 	default:
+		panic(fmt.Sprintf("unknown op: %v", self.op))
 	}
 }
 
-// This function assumes that the variable is called x
-func (self *Node) Function() lmath.Function {
-	return func (x float64) float64 {
-		return 0
+// This function assumes that there is only one variable
+func (self *Node) Function() Function {
+	self.OptimizeCommon()
+	funcs := make([]Function, len(self.nodes))
+	for i := range self.nodes {
+		funcs[i] = self.nodes[i].Function()
 	}
+	switch self.op {
+	case PLUS:
+		return func (x float64) float64 {
+			sum := float64(0)
+			for _, f := range funcs {
+				sum += f(x)
+			}
+			return sum
+		}
+	case MINUS:
+		return func (x float64) float64 {
+			return -funcs[0](x)
+		}
+	case MULT:
+		return func (x float64) float64 {
+			prod := float64(1)
+			for _, f := range funcs {
+				prod *= f(x)
+			}
+			return prod
+		}
+	case DIV:
+		return func (x float64) float64 {
+			return funcs[0](x) / funcs[1](x)
+		}
+	case POW:
+		return func (x float64) float64 {
+			return math.Pow(funcs[0](x), funcs[1](x))
+		}
+	case FUNC:
+		fallthrough
+	case ATOM:
+		return self.data.Function()
+	default:
+		panic(fmt.Sprintf("unknown op: %v", self.op))
+	}
+	
 }

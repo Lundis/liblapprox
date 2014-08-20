@@ -8,11 +8,14 @@ import (
 	"code.google.com/p/liblundis/lmath/approx"
 	"math"
 	"fmt"
+	"sort"
 )
 
 type Iteration struct {
 	Max_error, Leveled_error float64
 	Poly Poly
+	Replacing float64
+	New_root float64
 }
 
 func (self Iteration) String() string {
@@ -55,8 +58,9 @@ func ApproximateDegree(approx *approx.Approx, degree int, accuracy float64) []It
 		var loc float64
 		iter.Max_error, loc = FindMaxDiff(approx.Func, iter.Poly.Function(), approx.Start, approx.End)
 		diff = iter.Max_error - iter.Leveled_error
+		iter.Replacing = updateRoots(roots, approx.Func, iter.Poly.Function(), loc)
+		iter.New_root = loc
 		iters = append(iters, iter)
-		updateRoots(roots, approx.Func, iter.Poly.Function(), loc)
 	}
 	return iters
 }
@@ -92,7 +96,7 @@ func interpretSolution(matrix algebra.Matrix) (Poly, float64) {
 	return poly, math.Abs(matrix[len(matrix)-1][last_col])
 }
 
-func updateRoots(roots []float64, orig_func, approx_func Function, loc float64) {
+func updateRoots(roots []float64, orig_func, approx_func Function, loc float64) (replaced float64) {
 	// find the first root larger than loc
 	i := 0
 	for ; i < len(roots); i++ {
@@ -102,26 +106,34 @@ func updateRoots(roots []float64, orig_func, approx_func Function, loc float64) 
 	}
 	fmt.Printf("max at %.4f\n", loc)
 	PrintFancy(roots)
-	if i == len(roots) { // loc is last
-		fmt.Printf("replacing (last) %.4f\n", roots[i-1])
-		fmt.Println()
-		roots[i-1] = loc
-		return
-	}
-	// i is now larger than loc
-	
-	
-	// then replace either it or the previous one, depending on sign of errors
-	root_error := orig_func(roots[i]) - approx_func(roots[i])
 	max_error := orig_func(loc) - approx_func(loc)
-	if math.Signbit(root_error) == math.Signbit(max_error) {
-		fmt.Printf("replacing %.4f\n", roots[i])
-		roots[i] = loc
+	if i == len(roots) { // loc is after last
+		i--
+		root_error := orig_func(roots[i]) - approx_func(roots[i])
+		if math.Signbit(root_error) != math.Signbit(max_error) {
+			i = 0
+		}
 	} else {
-		fmt.Printf("replacing (previous) %.4f\n", roots[i-1])
-		roots[i-1] = loc
+		root_error := orig_func(roots[i]) - approx_func(roots[i])
+		if math.Signbit(root_error) != math.Signbit(max_error) {
+			if i == 0 { // loc is before first
+				// replace the last instead
+				i = len(roots)-1
+			} else {
+				// i is now larger than loc
+				// then replace either it or the previous one, depending on sign of errors
+				i--
+			}
+		}
 	}
-	fmt.Println()	
+	replaced = roots[i]
+	fmt.Printf("replacing %.4f\n", replaced)
+	roots[i] = loc
+	fmt.Println()
+	var tmp sort.Float64Slice = roots
+	tmp.Sort()
+
+	return replaced
 }
 
 func PrintFancy(roots []float64) {

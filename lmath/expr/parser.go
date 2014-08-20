@@ -18,11 +18,10 @@ func parse(expr []byte) (*Node, error) {
 	if len(expr) == 0 {
 		return nil, errors.New("Syntax Error!")
 	}
-	return parsePlus(expr)	
+	return parsePlus(expr)
 }
 
 func parsePlus(expr []byte) (*Node, error) {
-	
 	plus, minus := tokenize(expr, '+', '-')
 	if len(plus) == 1 && len(minus) == 0 {
 		// Nothing was found, move on to multiplication
@@ -46,13 +45,9 @@ func parsePlus(expr []byte) (*Node, error) {
 
 // Parses multiplication and division
 func parseMult(expr []byte) (*Node, error) {
-	if len(expr) == 0 {
-		return nil, errors.New("Syntax Error!")
-	}
 	mult, div := tokenize(expr, '*', '/')
 	if len(mult) == 1 && len(div) == 0 {
-		// Nothing was found, move on to parentheses
-		return parseParentheses(expr)
+		return parsePower(expr)
 	}
 	nodes_mult, err := parseExpressions(mult)
 	if err != nil {
@@ -79,6 +74,23 @@ func parseMult(expr []byte) (*Node, error) {
 	}
 }
 
+func parsePower(expr []byte) (*Node, error) {
+	exprs, _ := tokenize(expr, '^', '^')
+	if len(exprs) == 1 {
+		return parseParentheses(expr)
+	}
+	parsed, err := parseExpressions(exprs)
+	if err != nil {
+		return nil, err
+	}
+	tmp := parsed[len(parsed)-1]
+
+	for i := len(exprs)-2; i >= 0; i-- {
+		tmp = NewPowNode(parsed[i], tmp)
+	}
+	return tmp, nil
+}
+
 func parseParentheses(expr []byte) (*Node, error) {
 	if expr[0] == '(' && expr[len(expr) - 1] == ')' {
 		return parse(expr[1:len(expr) - 1])
@@ -88,11 +100,33 @@ func parseParentheses(expr []byte) (*Node, error) {
 }
 
 func parseAtom(expr []byte) (*Node, error) {
-	if '0' <= expr[0] && expr[0] <= '9' || expr[0] == '.' {
+	if strings.Contains(string(expr), "(") {
+		return parseFunction(expr)
+	} else if '0' <= expr[0] && expr[0] <= '9' || expr[0] == '.' {
 		return parseNumber(expr)
 	} else {
 		return parseVariable(expr)
 	}
+}
+
+func parseFunction(expr []byte) (*Node, error) {
+	first_par := strings.Index(string(expr), "(")
+	id := expr[:first_par]
+	internals, err := parseGroup(expr[first_par+1: len(expr)-1])
+	if err != nil {
+		return nil, err
+	}
+	a, err := NewBuiltinFunc(string(id), internals)
+	if err != nil {
+		return nil, err
+	}
+	return NewFunctionNode(a), nil
+}
+
+// a group is a set of nodes separated by commas
+func parseGroup(expr []byte) ([]*Node, error) {
+	exprs, _ := tokenize(expr, ',', ',')
+	return parseExpressions(exprs)
 }
 
 func parseNumber(expr []byte) (*Node, error) {
@@ -115,14 +149,16 @@ func parseVariable(expr []byte) (*Node, error) {
 	return NewVarNode(string(expr)), nil
 }
 
-// split returns the indices where expr[index] == op1 and where expr letter2, taking into account depth (parentheses).
-func tokenize(expr []byte, op1, op2 byte) ([][]byte, [][]byte) {
+// Returns substrings split by op1 and op2, considering parentheses.
+// Special case: if op1 == op2, only op1 will be considered
+func tokenize(expr []byte, op1, op2 byte) (indices1 [][]byte, indices2 [][]byte) {
 	depth := 0
-	indices1 := make([][]byte, 0, len(expr)/2)
-	indices2 := make([][]byte, 0, len(expr)/2)
+	indices1 = make([][]byte, 0, len(expr)/2)
+	indices2 = make([][]byte, 0, len(expr)/2)
 	start := 0
 	which := 1
-	if expr[0] == op2 {
+	// this is for the special case when there's a minus first
+	if expr[0] == op2 && op2 == '-' {
 		which = 2
 		expr = expr[1:]
 	}
@@ -161,8 +197,8 @@ func tokenize(expr []byte, op1, op2 byte) ([][]byte, [][]byte) {
 func parseExpressions(exprs [][]byte) ([]*Node, error) {
 	nodes := make([]*Node, len(exprs))
 	var err error
-	for i := 0; i < len(exprs); i++ {
-		nodes[i], err = parse(exprs[i])
+	for i, expr := range exprs {
+		nodes[i], err = parse(expr)
 		if err != nil {
 			return nil, err
 		}

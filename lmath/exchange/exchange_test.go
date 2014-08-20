@@ -11,7 +11,7 @@ func TestApproximate(t *testing.T) {
 		return x*x*x
 	}
 	approx := approx.NewApprox(f, 0, 1)
-	iters := Approximate(approx, []int{0, 1, 2}, 0.00000001)
+	iters := Approximate(approx, []int{0, 1, 2}, 1e-10)
 	for i, iter := range iters[0] {
 		fmt.Printf("%v: %v\n", i, iter)
 	}

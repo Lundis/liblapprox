@@ -13,6 +13,7 @@ func TestEvalCommonf64(t *testing.T) {
 		"e + 1": math.E + 1,
 		"e / pi": math.E / math.Pi,
 		"(e + 2*pi) / pi": (math.E + 2*math.Pi) / math.Pi,
+		"abs(-5)": 5,
 	}
 	for str, expected:= range tests {
 		result, err := EvalCommonf64(str)
