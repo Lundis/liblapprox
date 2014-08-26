@@ -43,8 +43,9 @@ func SaveSimpleGraph(funcs []lmath.Function, labels []string, start, end float64
         f_max, _ := lmath.Max(funcs[i], 100, start, end)
         max = math.Max(max, f_max)
     }
-    p.Y.Max = max
-    p.Y.Min = min
+    diff := max - min
+    p.Y.Max = max + diff*0.1
+    p.Y.Min = min - diff*0.1
 
     if err := p.Save(float64(w)/96, float64(h)/96, filename); err != nil {
         panic(err)

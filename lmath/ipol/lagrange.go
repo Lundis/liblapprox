@@ -3,13 +3,13 @@ package ipol
 import(
 	"fmt"
 	. "code.google.com/p/liblundis/lmath"
-	. "code.google.com/p/liblundis/lmath/poly"
+	. "code.google.com/p/liblundis/lmath/base/poly"
 )
 
 type LagrangeInterpolation struct {
 	x Vector
 	y Vector
-	bases []Poly
+	bases []*Poly
 }
 
 func NewLagrangeInterpolationvv(x, y Vector) LagrangeInterpolation {
@@ -18,7 +18,7 @@ func NewLagrangeInterpolationvv(x, y Vector) LagrangeInterpolation {
 	} else if len(x) < 1 {
 		fmt.Printf("NewLagrangeInterpolation error: can't be of degree zero")
 	}
-	lagrange := LagrangeInterpolation{make([]float64, len(x)), make([]float64, len(x)), make([]Poly, len(x))}
+	lagrange := LagrangeInterpolation{make([]float64, len(x)), make([]float64, len(x)), make([]*Poly, len(x))}
 	copy(lagrange.x, x)
 	copy(lagrange.y, y)
 	lagrange.generateBases()
@@ -32,17 +32,17 @@ func NewLagrangeInterpolationfv(f Function, x Vector) LagrangeInterpolation {
 
 func (self *LagrangeInterpolation) generateBases() {
 	for i := 0; i < len(self.bases); i++ {
-		poly := Poly{1}
+		poly := NewPoly0(1)
 		for j := 0; j < len(self.x); j++ {
 			if i != j {
-				poly = poly.Mult(Poly{-self.x[j], 1})
+				poly = poly.Mult(NewPoly1(-self.x[j], 1))
 			}
 		}
 		self.bases[i] = poly.MultConstant(1.0 / poly.ValueAt(self.x[i]))
 	}
 }
 
-func (self LagrangeInterpolation) Bases() []Poly {
+func (self LagrangeInterpolation) Bases() []*Poly {
 	return self.bases
 }
 

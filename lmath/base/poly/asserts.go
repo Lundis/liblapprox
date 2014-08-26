@@ -7,8 +7,8 @@ import(
 	"code.google.com/p/liblundis/lmath"
 )
 
-func AssertEqualsPoly(t *testing.T, p, correct Poly) {
-	var min, max Poly
+func AssertEqualsPoly(t *testing.T, p, correct *Poly) {
+	var min, max *Poly
 	if p.Degree() < correct.Degree() {
 		max = correct
 		min = p
@@ -19,11 +19,11 @@ func AssertEqualsPoly(t *testing.T, p, correct Poly) {
 
 	i := 0
 	for ; i <= min.Degree(); i++ {
-		lmath.AssertEqualsFloat64(t, p[i], correct[i], fmt.Sprintf("p[%d] == %v", i, p[i]))
+		lmath.AssertEqualsFloat64(t, p.Get(i), correct.Get(i), fmt.Sprintf("p[%d] == %v", i, p.Get(i)))
 	}
 	
 	for ; i <= max.Degree(); i++ {
-		lmath.AssertEqualsFloat64(t, max[i], 0, fmt.Sprintf("degreediff, p[%v] != 0", i))
+		lmath.AssertEqualsFloat64(t, max.Get(i), 0, fmt.Sprintf("degreediff, p[%v] != 0", i))
 	}
 }
 

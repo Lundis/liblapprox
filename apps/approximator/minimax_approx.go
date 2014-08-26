@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/liblundis/lmath/exchange"
 	"code.google.com/p/liblundis/lmath/approx"
 	"code.google.com/p/liblundis/lmath/plot"
+	"code.google.com/p/liblundis/lmath/base/poly"
 	"code.google.com/p/liblundis/lmath"
 	"code.google.com/p/gowut/gwu"
 	"time"
@@ -32,14 +33,14 @@ func newMinimaxApprox(degs []int, f lmath.Function, start, end, accuracy float64
 	mma := new(MinimaxApprox)
 	mma.id = "minimax" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	mma.approx = approx.NewApprox(f, start, end)
-	mma.iters = exchange.Approximate(mma.approx, degs, accuracy)
+	mma.iters = exchange.Approximate(mma.approx, degs, accuracy, poly.PolyFromBasisImpl)
 	return mma
 }
 
 func (self *MinimaxApprox) String(deg, iter int) string {
 	iters := self.iters[deg]
-	poly := iters[iter].Poly
-	return poly.String()
+	b := iters[iter].Basis
+	return b.String()
 }
 
 func (self *MinimaxApprox) ImageUrl(deg, iter, dimx, dimy int) string {
@@ -58,7 +59,7 @@ func ExistsFile(file string) bool {
 
 func (self *MinimaxApprox) generateImage(deg, iter, dimx, dimy int) {
 	filepath := ImageDir() + string(os.PathSeparator) + self.filename(deg, iter, dimx, dimy)
-	funcs := []lmath.Function{self.approx.Func, self.iters[deg][iter].Poly.Function()}
+	funcs := []lmath.Function{self.approx.Func, self.iters[deg][iter].Basis.Function()}
 	labels := []string{"f", "p"}
 	title := fmt.Sprintf("minimax deg %v, iter %v", deg, iter)
 	plot.SaveSimpleGraph(funcs, labels, self.approx.Start, self.approx.End, title, filepath, dimx, dimy)
@@ -76,7 +77,7 @@ func (self *MinimaxApprox) ErrorGraphUrl(deg, iter, dimx, dimy int) string {
 func (self *MinimaxApprox) generateErrorGraph(deg, iter, dimx, dimy int) {
 	filepath := ImageDir() + string(os.PathSeparator) + "err_" + self.filename(deg, iter, dimx, dimy)
 	f := func(x float64) float64 {
-		return self.approx.Func(x) - self.iters[deg][iter].Poly.Function()(x)
+		return self.approx.Func(x) - self.iters[deg][iter].Basis.Function()(x)
 	}
 	z := func(x float64) float64 {
 		return 0

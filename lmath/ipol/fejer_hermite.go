@@ -2,7 +2,7 @@ package ipol
 
 import (
 	. "code.google.com/p/liblundis/lmath"
-	. "code.google.com/p/liblundis/lmath/poly"
+	. "code.google.com/p/liblundis/lmath/base/poly"
 )
 
 func CreateFejerHermitePolynomialvv(x, y Vector, start, end float64) BigPoly {
