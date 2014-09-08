@@ -80,3 +80,18 @@ func FindMaxDiff(f, g Function, start, end float64) (max_diff, loc float64) {
     return max_diff, loc
 }
 
+// takes a monotonically increasing function and finds the location where it's within accuracy from value
+func BinarySearch(f Function, value, start, end float64) float64 {
+    low_loc := start
+    high_loc := end
+    for loc := (start + end) / 2;; loc = (high_loc + low_loc) / 2 {
+        y := f(loc)
+        if y == value || loc == low_loc || loc == high_loc {
+            return loc
+        } else if y > value { // we need to go lower
+            high_loc = loc
+        } else {
+            low_loc = loc
+        }
+    }
+}
