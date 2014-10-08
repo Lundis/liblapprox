@@ -6,6 +6,8 @@ import (
 	. "code.google.com/p/liblundis/lmath"
 	. "code.google.com/p/liblundis/lmath/base"
 	. "code.google.com/p/liblundis/lmath/base/poly"
+	"code.google.com/p/liblundis/lmath/util/discrete"
+
 	"fmt"
 )
 
@@ -15,7 +17,7 @@ func TestGenerateChebyshevRoots(t *testing.T) {
     }
     degree := 11
 	x := GenerateChebyshevRoots(degree, -1, 1)
-	y := Values(f, x)
+	y := discrete.Values(f, x)
 	assertLagrangeInterpolation(t, x, y)
 
 	poly11 := Poly{BasisImpl{V:[]float64{0, -11, 0, 220, 0, -1232, 0, 2816, 0, -2816, 0, 1024}}}

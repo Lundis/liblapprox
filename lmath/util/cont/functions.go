@@ -1,4 +1,4 @@
-package lmath
+package cont
 
 import (
     "math"
@@ -62,14 +62,6 @@ func FuncAbsDiff(f, g Function) Function {
     return func(x float64) float64 {
         return math.Abs(f(x) - g(x))
     }
-}
-
-func Values(f Function, x Vector) Vector {
-    y := make([]float64, len(x))
-    for i, v := range x {
-        y[i] = f(v)
-    }
-    return y
 }
 
 func FindMaxDiff(f, g Function, start, end float64) (max_diff, loc float64) {

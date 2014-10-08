@@ -52,7 +52,7 @@ func (self *ApproxGUI) buildFunctionSelector() gwu.Comp {
 
 func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
 	approx_settings := gwu.NewHorizontalPanel()
-	approx_type := gwu.NewListBox([]string{"minimax"})
+	approx_type := gwu.NewListBox([]string{"minimax", "minimax discrete"})
 	approx_type.SetSelected(0, true)
 	self.approx_box = approx_type
 	approx_settings.Add(approx_type)
@@ -69,6 +69,8 @@ func (self *ApproxGUI) buildApproximationSelector() gwu.Comp {
 			switch self.approx_box.SelectedValue() {
 			case "minimax":
 				self.approximateMinimax()
+			case "minimax discrete":
+				self.approximateMinimaxDiscrete()
 			default:
 				panic(fmt.Sprintf("Unknown approximation type selected: %v", self.approx_box.SelectedValue()))
 			}

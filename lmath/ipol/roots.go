@@ -1,7 +1,6 @@
 package ipol
 
 import (
-	. "code.google.com/p/liblundis/lmath"
 	"math"
 )
 
@@ -16,7 +15,7 @@ func GenerateChebyshevRoots(degree int, start, end float64) []float64 {
 }
 
 func GenerateEquiDistanceRoots(degree int, start, end float64) []float64 {
-	roots := make(Vector, degree)
+	roots := make([]float64, degree)
 	if (degree == 1) {
 		roots[0] = (start + end)/2
 		return roots

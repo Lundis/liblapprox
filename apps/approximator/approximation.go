@@ -2,6 +2,8 @@ package main
 
 import (
 	"code.google.com/p/gowut/gwu"
+	"os"
+	"fmt"
 )
 
 type ApproxBackend interface {
@@ -26,4 +28,31 @@ type ApproxBackend interface {
 	BuildInfoTable() gwu.Comp
 
 	UpdateInfoTable(deg, iter int)
+
+	Filename(deg, iter, dimx, dimy int) string
+}
+
+type ApproxBackendImpl struct {
+	id string
+}
+
+func (self *ApproxBackendImpl) Filename(deg, iter, dimx, dimy int) string {
+	return fmt.Sprintf("%v_%v_%v_%v_%v.png", self.id, deg, iter, dimx, dimy)
+}
+
+func imageUrl(backend ApproxBackend, deg, iter, dimx, dimy int) (string, bool) {
+	filename := backend.Filename(deg, iter, dimx, dimy)
+	full_path := ImageDir() + string(os.PathSeparator) + filename
+	return "img/" + filename, existsFile(full_path)
+}
+
+func errorGraphUrl(backend ApproxBackend, deg, iter, dimx, dimy int) (string, bool) {
+	filename := "err_" + backend.Filename(deg, iter, dimx, dimy)
+	full_path := ImageDir() + string(os.PathSeparator) + filename
+	return "img/" + filename, existsFile(full_path)
+}
+
+func existsFile(file string) bool {
+	_, err := os.Stat(file)
+	return !os.IsNotExist(err)
 }

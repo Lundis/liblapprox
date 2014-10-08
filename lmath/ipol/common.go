@@ -5,7 +5,7 @@ import (
 	. "code.google.com/p/liblundis/lmath/base/poly"
 )
 
-func L_k(k int, x Vector) BigPoly {
+func L_k(k int, x []float64) BigPoly {
 	divisor := NewBigPoly0f(1)
 	poly := NewBigPoly0f(1)
 	

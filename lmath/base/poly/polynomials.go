@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
 	. "code.google.com/p/liblundis/lmath/base"
 )
 

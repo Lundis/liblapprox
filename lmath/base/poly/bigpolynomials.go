@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
 )
 
 type BigPoly []*big.Rat

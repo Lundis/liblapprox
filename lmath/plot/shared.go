@@ -2,7 +2,7 @@ package plot
 
 import (
 	"os"
-	"code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
 	"fmt"
 )
 
@@ -10,7 +10,7 @@ import (
 // funcs: a map with the functions
 // indices: The indices of the maps to be written
 // n: amount of data points
-func WritePlotData(funcs map[int] lmath.Function, indices []int, filename string, n int, start, end float64) {
+func WritePlotData(funcs map[int] Function, indices []int, filename string, n int, start, end float64) {
     file, _ := os.Create(filename)
     fmt.Fprintf(file, "x    \t")
     for _, i := range indices {

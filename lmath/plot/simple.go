@@ -3,14 +3,14 @@ package plot
 import (
     "image/color"
     "math"
-	"code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
     "code.google.com/p/plotinum/plot"
     "code.google.com/p/plotinum/plotter"
 )
 
 var colors []color.Color = []color.Color{color.RGBA{A:255}, color.RGBA{R: 255, A:255}, color.RGBA{G: 255, A:255}, color.RGBA{R: 255, G: 255, A:255}, color.RGBA{R: 255, B: 255, A:255}, color.RGBA{G: 255, B: 255, A:255}}
 
-func SaveSimpleGraph(funcs []lmath.Function, labels []string, start, end float64, title string, filename string, w, h int) {
+func SaveSimpleGraph(funcs []Function, labels []string, start, end float64, title string, filename string, w, h int) {
     if len(funcs) != len(labels) {
         panic("SaveSimpleGraph: all functions must have labels")
     }
@@ -34,9 +34,9 @@ func SaveSimpleGraph(funcs []lmath.Function, labels []string, start, end float64
     min := funcs[0](start)
     max := min
     for i := range funcs {
-        f_min, _ := lmath.Min(funcs[i], 100, start, end)
+        f_min, _ := Min(funcs[i], 100, start, end)
         min = math.Min(min, f_min)
-        f_max, _ := lmath.Max(funcs[i], 100, start, end)
+        f_max, _ := Max(funcs[i], 100, start, end)
         max = math.Max(max, f_max)
     }
     diff := max - min

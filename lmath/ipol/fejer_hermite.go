@@ -2,10 +2,12 @@ package ipol
 
 import (
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
+	"code.google.com/p/liblundis/lmath/util/discrete"
 	. "code.google.com/p/liblundis/lmath/base/poly"
 )
 
-func CreateFejerHermitePolynomialvv(x, y Vector, start, end float64) BigPoly {
+func CreateFejerHermitePolynomialvv(x, y []float64, start, end float64) BigPoly {
 	sum := NewBigPoly0f(0)
 	for k := range x {
 		l_k := L_k(k, x)
@@ -18,7 +20,7 @@ func CreateFejerHermitePolynomialvv(x, y Vector, start, end float64) BigPoly {
 	return sum
 }
 
-func CreateFejerHermitePolynomialvf(x Vector, f Function, start, end float64) BigPoly {
-	y := Values(f, x)
+func CreateFejerHermitePolynomialvf(x []float64, f Function, start, end float64) BigPoly {
+	y := discrete.Values(f, x)
 	return CreateFejerHermitePolynomialvv(x, y, start, end)
 }

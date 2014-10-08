@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strings"
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
 )
 
 type Operator int

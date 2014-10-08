@@ -1,22 +1,23 @@
 package main
 
 import (
-	"code.google.com/p/liblundis/lmath"
+	"code.google.com/p/liblundis/lmath/util/cont"
 	"code.google.com/p/gowut/gwu"
 	"fmt"
 )
 
 type ApproxGUI struct {
 	function_box         gwu.ListBox
-	function             lmath.Function
+	function             cont.Function
 	custom_func          gwu.TextBox
 	interval_box         gwu.TextBox
 	ival_start, ival_end float64
 
-	degrees_box   gwu.TextBox
-	degrees     []int
-	current_deg   int
-	current_iter  int
+	degrees_box       gwu.TextBox
+	degrees         []int
+	current_deg       int
+	current_iter      int
+	discrete_points []float64
 
 	approx_box   gwu.ListBox
 	accuracy_box gwu.TextBox
@@ -167,6 +168,15 @@ func (self *ApproxGUI) updateInfoTable() {
 func (self *ApproxGUI) approximateMinimax() {
 	fmt.Println("Approximating minimax...")
 	self.backend = NewMinimaxApprox(self)
+	self.info_box.Clear()
+	self.info_box.Add(self.backend.BuildInfoTable())
+	self.current_deg = self.degrees[0]
+	self.current_iter = 0
+}
+
+func (self *ApproxGUI) approximateMinimaxDiscrete() {
+	fmt.Println("Approximating discrete minimax...")
+	self.backend = NewDiscreteMinimaxApprox(self)
 	self.info_box.Clear()
 	self.info_box.Add(self.backend.BuildInfoTable())
 	self.current_deg = self.degrees[0]

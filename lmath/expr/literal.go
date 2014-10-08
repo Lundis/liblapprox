@@ -2,6 +2,7 @@ package expr
 
 import (
 	. "code.google.com/p/liblundis/lmath"
+	. "code.google.com/p/liblundis/lmath/util/cont"
 	"fmt"
 	"math"
 	"math/big"

@@ -2,17 +2,18 @@ package ipol
 
 import(
 	"fmt"
-	. "code.google.com/p/liblundis/lmath"
+	"code.google.com/p/liblundis/lmath/util/cont"
+	"code.google.com/p/liblundis/lmath/util/discrete"
 	. "code.google.com/p/liblundis/lmath/base/poly"
 )
 
 type LagrangeInterpolation struct {
-	x Vector
-	y Vector
+	x []float64
+	y []float64
 	bases []*Poly
 }
 
-func NewLagrangeInterpolationvv(x, y Vector) LagrangeInterpolation {
+func NewLagrangeInterpolationvv(x, y []float64) LagrangeInterpolation {
 	if len(x) != len(y) {
 		fmt.Printf("NewLagrangeInterpolation error: len(x) != len(y)")
 	} else if len(x) < 1 {
@@ -25,8 +26,8 @@ func NewLagrangeInterpolationvv(x, y Vector) LagrangeInterpolation {
 	return lagrange
 }
 
-func NewLagrangeInterpolationfv(f Function, x Vector) LagrangeInterpolation {
-	y := Values(f, x)
+func NewLagrangeInterpolationfv(f cont.Function, x []float64) LagrangeInterpolation {
+	y := discrete.Values(f, x)
 	return NewLagrangeInterpolationvv(x, y)
 }
 
@@ -46,7 +47,7 @@ func (self LagrangeInterpolation) Bases() []*Poly {
 	return self.bases
 }
 
-func (self LagrangeInterpolation) Function() Function {
+func (self LagrangeInterpolation) Function() cont.Function {
 	return func(x float64) float64 {
 		sum := float64(0)
 		for i := 0; i < len(self.bases); i++ {
